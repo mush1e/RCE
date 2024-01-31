@@ -25,30 +25,33 @@ auto display_request(HTTP_request& req) -> void {
     for(auto x : req.headers) 
         std::cout << x.first << ": " << x.second << std::endl;
     
-    std::cout << "Body:\n" << req.body;
+    std::cout << "Body:\n" << req.body << std::endl;
 }
 
 
 // Parse the html request string 
-auto parse_request(HTTP_request& req, std::string req_str) -> void {
+void parse_request(HTTP_request& req, const std::string& req_str) {
     std::istringstream iss(req_str);
+    std::string line;
 
-    // Reading the Request Line
-    iss >> req.method >> req.URI >> req.version;
-    std::string buffer {};
+    // Parse request line
+    std::getline(iss, line);
+    std::istringstream line_stream(line);
+    line_stream >> req.method >> req.URI >> req.version;
 
-    // Reading the headers 
-    while(std::getline(iss, buffer) && !buffer.empty()) {
-        size_t index = buffer.find(":");
-        if(index != std::string::npos)
-            req.headers.push_back(std::make_pair(buffer.substr(0, index), buffer.substr(index+2)));
+    // Parse headers
+    while (std::getline(iss, line) && line != "\r") {
+        size_t pos = line.find(':');
+        if (pos != std::string::npos) {
+            std::string key = line.substr(0, pos);
+            std::string value = line.substr(pos + 1);
+            req.headers.emplace_back(key, value);
+        }
     }
 
-    // Parse Request Body
-    std::getline(iss, req.body, '\0');
-
+    // Parse body (if any)
+    std::getline(iss, req.body);
     display_request(req);
-    
 }
 
 auto main() -> int {
