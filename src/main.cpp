@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <utility>
 #include <sstream>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -9,19 +11,44 @@
 #define BUFF_SIZE 2048
 
 struct HTTP_request {
-    std::string  method  {};
-    std::string  URI     {};
-    std::string  version {};
-    // For now I dont know much about these but will implement later as I need it
-    // std::string* headers {};
-    // std::string  body    {};
+    std::string  method              {};
+    std::string  URI                 {};
+    std::string  version             {};
+    std::vector<std::pair<std::string, std::string>> headers {};
+    std::string body                 {};
 };
+
+// Just a utilities function to display HTTP Request to see if the values are being captured accurately
+auto display_request(HTTP_request& req) -> void {
+    
+    std::cout << "Headers:\n";
+    for(auto x : req.headers) 
+        std::cout << x.first << ": " << x.second << std::endl;
+    
+    std::cout << "Body:\n" << req.body;
+}
+
 
 // Parse the html request string 
 auto parse_request(HTTP_request& req, std::string req_str) -> void {
     std::istringstream iss(req_str);
+
+    // Reading the Request Line
     iss >> req.method >> req.URI >> req.version;
-    std::cout << req.method << " : " << req.URI << " : " << req.version << std::endl;
+    std::string buffer {};
+
+    // Reading the headers 
+    while(std::getline(iss, buffer) && !buffer.empty()) {
+        size_t index = buffer.find(":");
+        if(index != std::string::npos)
+            req.headers.push_back(std::make_pair(buffer.substr(0, index), buffer.substr(index+2)));
+    }
+
+    // Parse Request Body
+    std::getline(iss, req.body, '\0');
+
+    display_request(req);
+    
 }
 
 auto main() -> int {
@@ -87,9 +114,13 @@ auto main() -> int {
         HTTP_request request;
 
         std::string http_request_string(BUFFER, bytes_read);
-        // std::cout << http_request_string << std::endl;
 
         parse_request(request, http_request_string);
+
+        /*
+            When making a request from something like postman the loop only runs once per request 
+            but for something like safari, firefox the loop runs multiple times
+        */
 
         // At this point everything is good we've recieved the request
         // now we shall serve a basic html file
