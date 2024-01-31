@@ -6,6 +6,24 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#define BUFF_SIZE 2048
+
+struct HTTP_request {
+    std::string  method  {};
+    std::string  URI     {};
+    std::string  version {};
+    // For now I dont know much about these but will implement later as I need it
+    // std::string* headers {};
+    // std::string  body    {};
+};
+
+// Parse the html request string 
+auto parse_request(HTTP_request& req, std::string req_str) -> void {
+    std::istringstream iss(req_str);
+    iss >> req.method >> req.URI >> req.version;
+    std::cout << req.method << " : " << req.URI << " : " << req.version << std::endl;
+}
+
 auto main() -> int {
 
     // Creating a socket
@@ -50,20 +68,43 @@ auto main() -> int {
             continue;
         }
 
+        // Reading the request string from the client socket
+        char BUFFER[BUFF_SIZE] {};
+        ssize_t bytes_read = recv(client_socket, BUFFER, sizeof(BUFFER), 0);
+
+        // error handling- if unable to read request string
+        if(bytes_read == 0) {
+            std::cerr << "Error: Client disconnected from server!\n";
+            continue;    
+        } 
+        
+        else if (bytes_read <= 0) {
+            std::cerr << "Error: Error reading request string!\n";
+            continue;
+        }
+
+        // Now that we know that there was no error reading the request string Let's parse it
+        HTTP_request request;
+
+        std::string http_request_string(BUFFER, bytes_read);
+        // std::cout << http_request_string << std::endl;
+
+        parse_request(request, http_request_string);
+
         // At this point everything is good we've recieved the request
         // now we shall serve a basic html file
 
         // Reading the contents of our HTML file and storing them as a string
-        std::ifstream html_fptr("../public/index.html");
-        std::stringstream buffer;
-        buffer << html_fptr.rdbuf();
-        std::string html_content = buffer.str();
+        // std::ifstream html_fptr("../public/index.html");
+        // std::stringstream buffer;
+        // buffer << html_fptr.rdbuf();
+        // std::string html_content = buffer.str();
 
         // Creating the HTTP response string
-        std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
+        // std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
 
         // Send the response to the client
-        send(client_socket, response.c_str(), response.length(), 0);
+        // send(client_socket, response.c_str(), response.length(), 0);
 
         // Closing the client socket to free up resources related to
         // this particular request
