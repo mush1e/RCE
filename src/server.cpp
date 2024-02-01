@@ -47,6 +47,7 @@ auto HTTP_Server::start() -> void {
             continue;
         }
 
+        // Create a threat to handle this request and then detach it so it just does its own thing
         std::thread client_thread(handle_client, client_socket);
         client_thread.detach();
     }

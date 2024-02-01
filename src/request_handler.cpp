@@ -34,13 +34,31 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
         if (pos != std::string::npos) {
             std::string key = line.substr(0, pos);
             std::string value = line.substr(pos + 1);
+
+            // Trim leading and trailing spaces from key and value
+            key.erase(0, key.find_first_not_of(" \t"));
+            key.erase(key.find_last_not_of(" \t") + 1);
+            value.erase(0, value.find_first_not_of(" \t"));
+            value.erase(value.find_last_not_of(" \t") + 1);
             req.headers.emplace_back(key, value);
         }
     }
 
-    // Parse body (if any)
-    std::getline(iss, req.body, '\0');
+    // Parse body based on Content-Length header (if present)
+    for (const auto& header : req.headers) {
+        if (header.first == "Content-Length") {
+            int content_length = std::stoi(header.second);
+            if (content_length > 0) {
+                std::string body_content(content_length, '\0');
+                if (iss.read(&body_content[0], content_length)) {
+                    req.body = body_content;
+                }
+            }
+            break; // Stop after finding Content-Length header
+        }
+    }
 }
+
 
 void handle_client(int client_socket) {
 
