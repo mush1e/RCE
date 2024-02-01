@@ -4,11 +4,14 @@
 #include <vector>
 #include <utility>
 #include <sstream>
+#include <thread>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/select.h>
 
-#define BUFF_SIZE 2048
+#define BUFF_SIZE 4096
 
 struct HTTP_request {
     std::string  method              {};
@@ -17,16 +20,6 @@ struct HTTP_request {
     std::vector<std::pair<std::string, std::string>> headers {};
     std::string body                 {};
 };
-
-// Just a utilities function to display HTTP Request to see if the values are being captured accurately
-auto display_request(HTTP_request& req) -> void {
-    
-    std::cout << "Headers:\n";
-    for(auto x : req.headers) 
-        std::cout << x.first << ": " << x.second << std::endl;
-    
-    std::cout << "Body:\n" << req.body << std::endl;
-}
 
 // A function to serve different html pages based on the request type
 auto handle_request(HTTP_request& req, int client_socket) -> void {
@@ -71,9 +64,44 @@ void parse_request(HTTP_request& req, const std::string& req_str) {
     std::getline(iss, req.body);
 }
 
+
+// A function to serve different html pages based on the request type
+void handle_client(int client_socket) {
+    HTTP_request request;
+
+    // Reading the request string from the client socket
+    char BUFFER[BUFF_SIZE] {};
+    ssize_t bytes_read = recv(client_socket, BUFFER, sizeof(BUFFER), 0);
+
+    // error handling- if unable to read request string
+    if(bytes_read == 0) {
+        std::cerr << "Error: Client disconnected from server!\n";
+        close(client_socket);
+        return;
+    } 
+        
+    else if (bytes_read <= 0) {
+        std::cerr << "Error: Error reading request string!\n";
+        close(client_socket);
+        return;
+    }
+
+    // Now that we know that there was no error reading the request string Let's parse it
+    std::string http_request_string(BUFFER, bytes_read);
+    parse_request(request, http_request_string);
+
+    // At this point everything is good we've recieved the request
+    // now we shall serve a basic html file
+    handle_request(request, client_socket);
+
+    // Closing the client socket to free up resources related to
+    // this particular request
+    close(client_socket);
+}
+
 auto main() -> int {
 
-    // Creating a socket
+    // Creating a socket IPV4, Stream socket with TCP
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     // error handling - If socket could not be created
@@ -85,8 +113,10 @@ auto main() -> int {
     // Binding socket to port 8080
     sockaddr_in server_address;
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(8080);
+    server_address.sin_addr.s_addr = INADDR_ANY; // recieve connections from any address
+
+    // Host to network, short (basically converts byte order for 8080 fo network standard)
+    server_address.sin_port = htons(8080);       
 
     // error handling - If socket could not be bound
     if (bind(server_socket, (sockaddr*)&server_address, sizeof(server_address)) == -1) {
@@ -115,41 +145,9 @@ auto main() -> int {
             continue;
         }
 
-        // Reading the request string from the client socket
-        char BUFFER[BUFF_SIZE] {};
-        ssize_t bytes_read = recv(client_socket, BUFFER, sizeof(BUFFER), 0);
-
-        // error handling- if unable to read request string
-        if(bytes_read == 0) {
-            std::cerr << "Error: Client disconnected from server!\n";
-            continue;    
-        } 
-        
-        else if (bytes_read <= 0) {
-            std::cerr << "Error: Error reading request string!\n";
-            continue;
-        }
-
-        // Now that we know that there was no error reading the request string Let's parse it
-        HTTP_request request;
-
-        std::string http_request_string(BUFFER, bytes_read);
-
-        parse_request(request, http_request_string);
-
-        /*
-            When making a request from something like postman the loop only runs once per request 
-            but for something like safari, firefox the loop runs multiple times
-        */
-
-        // At this point everything is good we've recieved the request
-        // now we shall serve a basic html file
-
-        handle_request(request, client_socket);
-        // Closing the client socket to free up resources related to
-        // this particular request
-
-        close(client_socket);
+        // Create a new thread to handle the client connection
+        std::thread client_thread(handle_client, client_socket);
+        client_thread.detach(); // Detach the thread to allow it to run independently
     }
 
     // close the server socket - GG
