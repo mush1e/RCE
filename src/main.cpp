@@ -28,6 +28,24 @@ auto display_request(HTTP_request& req) -> void {
     std::cout << "Body:\n" << req.body << std::endl;
 }
 
+// A function to serve different html pages based on the request type
+auto handle_request(HTTP_request& req, int client_socket) -> void {
+    
+    if(req.method == "GET" && req.URI == "/") {
+        // Reading the contents of our HTML file and storing them as a string
+        std::ifstream html_fptr("../public/index.html");
+        std::stringstream buffer;
+        buffer << html_fptr.rdbuf();
+        std::string html_content = buffer.str();
+
+        // Creating the HTTP response string
+        std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
+
+        // Send the response to the client
+        send(client_socket, response.c_str(), response.length(), 0);
+
+    }
+}
 
 // Parse the html request string 
 void parse_request(HTTP_request& req, const std::string& req_str) {
@@ -51,7 +69,6 @@ void parse_request(HTTP_request& req, const std::string& req_str) {
 
     // Parse body (if any)
     std::getline(iss, req.body);
-    display_request(req);
 }
 
 auto main() -> int {
@@ -128,20 +145,10 @@ auto main() -> int {
         // At this point everything is good we've recieved the request
         // now we shall serve a basic html file
 
-        // Reading the contents of our HTML file and storing them as a string
-        // std::ifstream html_fptr("../public/index.html");
-        // std::stringstream buffer;
-        // buffer << html_fptr.rdbuf();
-        // std::string html_content = buffer.str();
-
-        // Creating the HTTP response string
-        // std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
-
-        // Send the response to the client
-        // send(client_socket, response.c_str(), response.length(), 0);
-
+        handle_request(request, client_socket);
         // Closing the client socket to free up resources related to
         // this particular request
+
         close(client_socket);
     }
 
