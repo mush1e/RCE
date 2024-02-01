@@ -1,2 +1,22 @@
 a.out
 src/a.out
+
+# Compiled Executable
+server
+
+# Object Files
+obj/
+
+# Build Artifacts
+*.o
+*.d
+
+# IDE/Editor Files
+.vscode/
+.idea/
+.DS_Store
+
+# User-Specific Files
+.clang-format
+.clang-tidy
+.vimrc
