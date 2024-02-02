@@ -1,11 +1,11 @@
 #include "request_handler.hpp"
-
+#include "utils.hpp"
 
 auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
     if(req.method == "GET" && req.URI == "/") {
         // Reading the contents of our HTML file and storing them as a string
-        std::ifstream html_fptr("../public/index.html");
+        std::ifstream html_fptr("./public/index.html");
         std::stringstream buffer;
         buffer << html_fptr.rdbuf();
         std::string html_content = buffer.str();
@@ -57,6 +57,8 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
             break; // Stop after finding Content-Length header
         }
     }
+
+    display_request(req);
 }
 
 

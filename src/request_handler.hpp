@@ -8,8 +8,6 @@
 #ifndef REQUEST_HANDLER_HPP
 #define REQUEST_HANDLER_HPP
 
-#include <string>
-
 struct HTTPRequest {
     std::string method   {};
     std::string URI      {};
