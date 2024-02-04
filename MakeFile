@@ -19,9 +19,12 @@ SRCS = $(wildcard $(SRC_DIR)/*.cpp)
 # Object files
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
+# Linker flags for SQLite library
+LIBS = -lsqlite3
+
 # Rule to build executable
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 # Rule to build object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp

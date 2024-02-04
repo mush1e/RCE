@@ -9,6 +9,7 @@ class Database {
 public:
     Database();
     ~Database();
+    static Database& getInstance();
     void initialize_database();
     void create_tables();
     void execute_query(const char*);

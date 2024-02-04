@@ -33,6 +33,13 @@ auto HTTP_Server::start() -> void {
         exit(1);
     }
 
+    // Obtain the single instance of the Database class
+    Database& database = Database::getInstance();
+
+    // Use the database instance to perform operations
+    database.initialize_database();
+    database.create_tables();
+
     // Success message
     std::cout << "Server started. Listening on port " << this->port << "...\n";
 

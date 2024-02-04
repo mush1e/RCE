@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 #include "request_handler.hpp"
-
+#include "database.hpp"
 
 #ifndef SERVER_HPP
 #define SERVER_HPP

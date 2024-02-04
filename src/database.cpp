@@ -1,9 +1,15 @@
 #include "database.hpp"
 
+Database& Database::getInstance() {
+    static Database instance; // Guaranteed to be initialized once
+    return instance;
+}
+
+
 Database::Database() {
-    
-    if(sqlite3_open("../db/creation.sql", &db) != SQLITE_OK) {
-        std::cerr << "Error: Can't open database" 
+
+    if(sqlite3_open("./db/model.sql", &db) != SQLITE_OK) {
+        std::cerr << "Error: Can't open database: " 
                   << sqlite3_errmsg(db) << std::endl;
         exit(1);
     }
