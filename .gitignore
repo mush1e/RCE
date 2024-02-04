@@ -21,5 +21,4 @@ obj/
 .clang-tidy
 .vimrc
 
-db
 db/*
