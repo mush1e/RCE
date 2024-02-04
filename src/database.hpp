@@ -11,6 +11,7 @@ public:
     ~Database();
     void initialize_database();
     void create_tables();
+    void execute_query(const char*);
 };
 
 #endif // DATABASE_HPP

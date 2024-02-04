@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include "database.hpp"
 
 #ifndef REQUEST_HANDLER_HPP
 #define REQUEST_HANDLER_HPP
