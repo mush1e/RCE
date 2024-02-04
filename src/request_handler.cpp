@@ -3,20 +3,38 @@
 
 auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
-    if(req.method == "GET" && req.URI == "/") {
-        // Reading the contents of our HTML file and storing them as a string
-        std::ifstream html_fptr("./public/index.html");
-        std::stringstream buffer;
-        buffer << html_fptr.rdbuf();
-        std::string html_content = buffer.str();
-
-        // Creating the HTTP response string
-        std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
-
-        // Send the response to the client
+    std::string html_file_path;
+    
+    if(req.method == "GET" && req.URI == "/") 
+        html_file_path = "./public/index.html";
+    
+    else if(req.method == "GET" && req.URI == "/login") 
+        html_file_path = "./public/login.html";
+    
+    else if(req.method == "GET" && req.URI == "/register") 
+        html_file_path = "./public/register.html";
+    
+    else {
+        // Handle 404 Not Found
+        std::string not_found_content = "<h1>404 Not Found</h1>";
+        std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: " + std::to_string(not_found_content.length()) + "\r\n\r\n" + not_found_content;
         send(client_socket, response.c_str(), response.length(), 0);
+        return;
     }
+
+    // Reading the contents of the HTML file and storing them as a string
+    std::ifstream html_fptr(html_file_path);
+    std::stringstream buffer;
+    buffer << html_fptr.rdbuf();
+    std::string html_content = buffer.str();
+
+    // Creating the HTTP response string
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
+
+    // Send the response to the client
+    send(client_socket, response.c_str(), response.length(), 0);
 }
+
 
 
 auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
