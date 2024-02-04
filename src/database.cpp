@@ -47,7 +47,7 @@ void Database::create_tables() {
 
     const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users ("
                                          "user_id INTEGER PRIMARY KEY,"
-                                         "username TEXT,"
+                                         "username TEXT UNIQUE,"
                                          "password TEXT,"
                                          "is_admin INTEGER"
                                          ");";
@@ -63,6 +63,6 @@ void Database::execute_query(const char* sql_query) {
     if (result != SQLITE_OK) {
         std::cerr << "Error: SQL error: " << sqlite3_errmsg(db) << std::endl;
     } else {
-        std::cout << "Table created successfully" << std::endl;
+        std::cout << "Query Executed successfully" << std::endl;
     }
 }
