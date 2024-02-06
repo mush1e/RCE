@@ -7,11 +7,13 @@
 #include <cstring>
 #include <fcntl.h>
 #include <sys/select.h>
-#include "request_handler.hpp"
-#include "database.hpp"
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
+
+#include "database.hpp"
+#include "request_handler.hpp"
+
 
 class HTTP_Server {
     int server_socket {};

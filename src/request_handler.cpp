@@ -14,6 +14,10 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
     else if(req.method == "GET" && req.URI == "/register") 
         html_file_path = "./public/register.html";
     
+    else if(req.method == "POST" && req.URI == "/register") {
+        handle_registration(req, client_socket);
+    }
+    
     else {
         // Handle 404 Not Found
         std::string not_found_content = "<h1>404 Not Found</h1>";

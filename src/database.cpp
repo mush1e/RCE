@@ -66,3 +66,42 @@ void Database::execute_query(const char* sql_query) {
         std::cout << "Query Executed successfully" << std::endl;
     }
 }
+
+// Method to sanitize input by escaping special characters
+std::string Database::sanitize_input(const std::string& input) const{
+    std::ostringstream sanitized;
+    for (char c : input) {
+        if (c == '\'') {
+            sanitized << "''"; // Escape single quotes
+        } else {
+            sanitized << c;
+        }
+    }
+    return sanitized.str();
+}
+
+// Method to check if a username exists in the database
+bool Database::username_exists(const std::string& username) {
+    std::string sanitized_username = sanitize_input(username);
+    std::string query = "SELECT COUNT(*) FROM users WHERE username = '" + sanitized_username + "'";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        return false;
+    }
+    int count = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    return count > 0;
+}
+
+// Method to insert a new user into the users table
+bool Database::insert_user(const std::string& username, const std::string& password, bool is_admin) {
+    std::string sanitized_username = sanitize_input(username);
+    std::string sanitized_password = sanitize_input(password);
+    std::string query = "INSERT INTO users (username, password, is_admin) VALUES ('" + sanitized_username + "', '" + sanitized_password + "', " + (is_admin ? "1" : "0") + ")";
+    execute_query(query.c_str());
+    return true; // You can add error handling if necessary
+}
