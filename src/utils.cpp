@@ -17,6 +17,10 @@ std::string get_form_field(const std::string& body, const std::string& field_nam
                     :  end_pos;
         
         field_value = body.substr(pos, end_pos - pos);
+        
     }
+    std::cout << field_name << " : " << field_value << std::endl;
+    std::cout << body << std::endl;
+    
     return field_value;
 }

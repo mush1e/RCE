@@ -24,21 +24,26 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
 
     if (username.empty() || password.empty() || confirm_password.empty()) {
         send_bad_request(client_socket);
+        std::cerr << "Error: Empty Fields!\n";
         return;
     }
 
     if (!std::regex_match(password, passwordRegex)) {
         send_bad_request(client_socket);
+        std::cerr << "Error: Invalid Password!\n";
         return;
     }
 
     if (password != confirm_password) {
         send_bad_request(client_socket);
+        std::cerr << "Error: Password mismatch!\n";
+
         return;
     }
 
     if (db.username_exists(username)) {
         send_bad_request(client_socket);
+        std::cerr << "Error: User exists!\n";
         return;
     }
 
