@@ -48,7 +48,7 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
     }
 
     // Insert the new user into the database
-    bool is_admin = admin_checkbox == "on"; // Assuming checkbox value is "on" when checked
+    bool is_admin = admin_checkbox == "on"; 
     if (!db.insert_user(username, password, is_admin)) {
         std::cerr << "Error: Failed to insert user into database" << std::endl;
         send_internal_server_error(client_socket);
