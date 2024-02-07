@@ -1,4 +1,5 @@
 #include "request_handler.hpp"
+#include "controller.hpp"
 #include "utils.hpp"
 
 auto handle_request(HTTPRequest& req, int client_socket) -> void {

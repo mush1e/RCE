@@ -18,8 +18,8 @@ public:
     std::string sanitize_input(const std::string& input) const;
 
     // Query functions
-    bool Database::username_exists(const std::string& username);
-    bool Database::insert_user(const std::string& username, const std::string& password, bool is_admin);
+    bool username_exists(const std::string& username);
+    bool insert_user(const std::string& username, const std::string& password, bool is_admin);
 };
 
 #endif // DATABASE_HPP

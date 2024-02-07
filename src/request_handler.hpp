@@ -9,7 +9,6 @@
 #define REQUEST_HANDLER_HPP
 
 #include "database.hpp"
-#include "controller.hpp"
 
 struct HTTPRequest {
     std::string method   {};
