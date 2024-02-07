@@ -21,5 +21,6 @@ struct HTTPRequest {
 void handle_client(int client_socket);
 void parse_request(HTTPRequest& req, const std::string& req_str);
 void handle_request(HTTPRequest& req, int client_socket);
+void parse_form_data(const std::string& form_data, HTTPRequest& req);
 
 #endif // REQUEST_HANDLER_HPP
