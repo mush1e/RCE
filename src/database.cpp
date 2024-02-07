@@ -48,9 +48,11 @@ void Database::create_tables() {
     const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users ("
                                          "user_id INTEGER PRIMARY KEY,"
                                          "username TEXT UNIQUE,"
-                                         "password TEXT,"
+                                         "password_hash TEXT,"
+                                         "password_salt TEXT,"
                                          "is_admin INTEGER"
                                          ");";
+
 
     // Execute SQL queries to create tables
     execute_query(create_questions_table_sql);
@@ -97,11 +99,44 @@ bool Database::username_exists(const std::string& username) {
     return count > 0;
 }
 
+std::string generate_salt() {
+    const std::string char_list = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    const size_t salt_length = 16; // Adjust length as needed
+    std::string salt;
+
+    // Initialize random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, char_list.length() - 1);
+
+    for (auto i = 0u; i < salt_length; ++i) 
+        salt += char_list[dis(gen)];
+
+    return salt;
+}
+
+std::string hash_password(const std::string& password) {
+    std::hash<std::string> hash_fn;
+    return std::to_string(hash_fn(password));
+}
+
 // Method to insert a new user into the users table
 bool Database::insert_user(const std::string& username, const std::string& password, bool is_admin) {
     std::string sanitized_username = sanitize_input(username);
     std::string sanitized_password = sanitize_input(password);
-    std::string query = "INSERT INTO users (username, password, is_admin) VALUES ('" + sanitized_username + "', '" + sanitized_password + "', " + (is_admin ? "1" : "0") + ")";
+    
+    std::string salt = generate_salt();
+    std::string salted_password = salt + sanitized_password;
+    std::string hashed_password = hash_password(salted_password);
+
+
+    std::string query = "INSERT INTO users (username, password_hash, password_salt, is_admin) VALUES ('" 
+                            + sanitized_username + "', '" 
+                            + hashed_password + "', '" 
+                            + salt + "', " 
+                            + (is_admin ? "1" : "0") 
+                            + ")";
+
     execute_query(query.c_str());
     return true; // You can add error handling if necessary
 }
