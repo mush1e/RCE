@@ -19,34 +19,33 @@ std::string get_form_field(const std::string& body, const std::string& field_nam
         field_value = body.substr(pos, end_pos - pos);
         
     }
-    std::cout << field_name << " : " << field_value << std::endl;
-    std::cout << body << std::endl;
 
-    return field_value;
+    return url_decode(field_value);
 }
 
-auto url_decode(const std::string& encoded) -> std::string {
+std::string url_decode(const std::string& str) {
+    int i = 0;
     std::stringstream decoded;
-    decoded.fill('0');
-
-    size_t len = encoded.length();
-    size_t index = 0;
-    while (index < len) {
-        if (encoded[index] == '%' && index + 2 < len && isxdigit(encoded[index + 1]) && isxdigit(encoded[index + 2])) {
-            // Found an encoded character
-            char decoded_char = static_cast<char>(std::stoi(encoded.substr(index + 1, 2), nullptr, 16));
-            decoded << decoded_char;
-            index += 3; // Move to the next encoded character
-        } else if (encoded[index] == '+') {
-            // '+' is decoded to space ' ' in URL encoding
+    
+    while (i < str.length()) {
+        if (str[i] == '%') {
+            if (i + 2 < str.length()) {
+                int hexValue;
+                std::istringstream(str.substr(i + 1, 2)) >> std::hex >> hexValue;
+                decoded << static_cast<char>(hexValue);
+                i += 3; 
+            } else {
+                // If '%' is at the end of the string, leave it unchanged
+                decoded << '%';
+                i++;
+            }
+        } else if (str[i] == '+') {
             decoded << ' ';
-            index++;
+            i++;
         } else {
-            // Normal character
-            decoded << encoded[index];
-            index++;
+            decoded << str[i];
+            i++;
         }
     }
-
     return decoded.str();
 }
