@@ -60,13 +60,17 @@ void Database::create_tables() {
     execute_query(create_users_table_sql);
 }
 
-void Database::execute_query(const char* sql_query) {
+bool Database::execute_query(const char* sql_query) {
     int result = sqlite3_exec(db, sql_query, nullptr, nullptr, nullptr);
+
+    // error handling
     if (result != SQLITE_OK) {
         std::cerr << "Error: SQL error: " << sqlite3_errmsg(db) << std::endl;
-    } else {
-        std::cout << "Query Executed successfully" << std::endl;
-    }
+        return false;
+    } 
+    else 
+        return true;
+
 }
 
 // Method to sanitize input by escaping special characters
@@ -125,6 +129,7 @@ bool Database::insert_user(const std::string& username, const std::string& passw
     std::string sanitized_username = sanitize_input(username);
     std::string sanitized_password = sanitize_input(password);
     
+    // Salting and hashing the passwords before inserting into db
     std::string salt = generate_salt();
     std::string salted_password = salt + sanitized_password;
     std::string hashed_password = hash_password(salted_password);
@@ -137,6 +142,5 @@ bool Database::insert_user(const std::string& username, const std::string& passw
                             + (is_admin ? "1" : "0") 
                             + ")";
 
-    execute_query(query.c_str());
-    return true; // You can add error handling if necessary
+    return execute_query(query.c_str());
 }
