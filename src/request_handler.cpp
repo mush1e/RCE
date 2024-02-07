@@ -52,7 +52,7 @@ auto parse_form_data(const std::string& form_data, HTTPRequest& req) -> void {
             // Decode URL-encoded key and value
             key = url_decode(key);
             value = url_decode(value);
-
+            std::cout << key << ": " << value << std::endl;
             req.body += key + ": " + value + "\n"; // Assuming you want to store key-value pairs in the body
         }
     }
