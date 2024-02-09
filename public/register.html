@@ -27,17 +27,13 @@
                 <input type="checkbox" class="form-check-input" id="admin" name="admin">
                 <label class="form-check-label" for="admin">Admin</label>
             </div>
-            <button type="button" id="submit" class="btn btn-primary mt-3" onclick="checkForm()">Register</button>
+            <button type="button" id="submit" class="btn btn-primary mt-3">Register</button>
 
         </form>
     </div>
     
     <script>
         function validateForm() {
-            return validatePassword();
-        }
-
-        function validatePassword() {
             var password = document.getElementById("password").value;
             var confirm_password = document.getElementById("confirm_password").value;
 
@@ -59,9 +55,8 @@
 
             var isValid = validateForm();
             if (!isValid) {
-                // Re-enable the button if validation fails
                 document.getElementById("registerButton").disabled = false;
-                return false; // Return false to prevent form submission if validation fails
+                return false; 
             }
 
             var formData = new FormData(document.getElementById("registrationForm"));
@@ -73,14 +68,11 @@
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (xhr.status === 200) {
                         alert("User successfully registered");
-                        // Optionally, you can redirect or perform other actions upon successful registration
                     } else if (xhr.status === 409) { 
                         alert("Username already exists. Please choose a different username.");
                     } else {
                         console.error("Error checking form data");
                     }
-
-                    // Re-enable the button after the request is complete
                     document.getElementById("registerButton").disabled = false;
                 }
             };
