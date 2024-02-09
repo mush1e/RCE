@@ -2,41 +2,69 @@
 #include "controller.hpp"
 #include "utils.hpp"
 
-auto handle_request(HTTPRequest& req, int client_socket) -> void {
+void serveStaticFile(const std::string& filePath, int client_socket) {
+    
+    std::ifstream file(filePath);
+    
+    if (file.good()) {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        std::string content = buffer.str();
 
-    std::string html_file_path;
+        std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " 
+                                + std::to_string(content.length()) 
+                                + "\r\n\r\n" 
+                                + content;
     
-    if(req.method == "GET" && req.URI == "/") 
-        html_file_path = "./public/index.html";
-    
-    else if(req.method == "GET" && req.URI == "/login") 
-        html_file_path = "./public/login.html";
-    
-    else if(req.method == "GET" && req.URI == "/register") 
-        html_file_path = "./public/register.html";
-    
-    else if(req.method == "POST" && req.URI == "/register") {
-        handle_registration(req, client_socket);
-    }
-    
-    else {
-        // Handle 404 Not Found
-        std::string not_found_content = "<h1>404 Not Found</h1>";
-        std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: " + std::to_string(not_found_content.length()) + "\r\n\r\n" + not_found_content;
         send(client_socket, response.c_str(), response.length(), 0);
-        return;
-    }
+    } 
+    else 
+        sendNotFoundResponse(client_socket);
+}
 
-    // Reading the contents of the HTML file and storing them as a string
-    std::ifstream html_fptr(html_file_path);
-    std::stringstream buffer;
-    buffer << html_fptr.rdbuf();
-    std::string html_content = buffer.str();
+void sendNotFoundResponse(int client_socket) {
+    
+    std::string notFoundContent = "<h1>404 Not Found</h1>";
 
-    // Creating the HTTP response string
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(html_content.length()) + "\r\n\r\n" + html_content;
+    std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: " 
+                            + std::to_string(notFoundContent.length()) 
+                            + "\r\n\r\n" 
+                            + notFoundContent;
+    
+    send(client_socket, response.c_str(), response.length(), 0);
+}
 
-    // Send the response to the client
+auto handle_request(HTTPRequest& req, int client_socket) -> void {
+    if (req.method == "GET") 
+
+        if (req.URI == "/") 
+            serveStaticFile("./public/index.html", client_socket);
+
+        else if (req.URI == "/login") 
+            serveStaticFile("./public/login.html", client_socket);
+
+        else if (req.URI == "/register") 
+            serveStaticFile("./public/register.html", client_socket);
+        
+        else 
+            sendNotFoundResponse(client_socket);
+
+    else if (req.method == "POST") 
+        
+        if (req.URI == "/register") 
+            handle_registration(req, client_socket);
+        
+         else 
+            sendNotFoundResponse(client_socket);
+        
+    else 
+        sendNotFoundResponse(client_socket);
+    
+}
+
+void sendMethodNotAllowedResponse(int client_socket) {
+    std::string notAllowedContent = "<h1>405 Method Not Allowed</h1>";
+    std::string response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: " + std::to_string(notAllowedContent.length()) + "\r\n\r\n" + notAllowedContent;
     send(client_socket, response.c_str(), response.length(), 0);
 }
 
@@ -87,15 +115,17 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
     for (const auto& header : req.headers) {
         if (header.first == "Content-Length") {
             int content_length = std::stoi(header.second);
+
             if (content_length > 0) {
                 std::string body_content(content_length, '\0');
                 if (iss.read(&body_content[0], content_length)) {
+
                     // URL decoding for form data
-                    if (req.headers[0].second == "application/x-www-form-urlencoded") {
+                    if (req.headers[0].second == "application/x-www-form-urlencoded") 
                         parse_form_data(body_content, req);
-                    } else {
+
+                    else 
                         req.body = body_content;
-                    }
                 }
             }
             break; // Stop after finding Content-Length header
