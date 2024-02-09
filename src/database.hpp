@@ -17,7 +17,7 @@ public:
     static Database& getInstance();
     void initialize_database();
     void create_tables();
-    void execute_query(const char*);
+    bool execute_query(const char*);
     std::string sanitize_input(const std::string& input) const;
 
     // Query functions

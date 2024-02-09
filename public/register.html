@@ -10,7 +10,7 @@
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Register</h2>
-        <form action="/register" method="post" onsubmit="return validatePassword()">
+        <form id="registrationForm" action="/register" method="post">
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
@@ -27,23 +27,25 @@
                 <input type="checkbox" class="form-check-input" id="admin" name="admin">
                 <label class="form-check-label" for="admin">Admin</label>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Register</button>
+            <button type="button" id="submit" class="btn btn-primary mt-3" onclick="checkForm()">Register</button>
+
         </form>
     </div>
     
     <script>
-        // Function to validate password format
+        function validateForm() {
+            return validatePassword();
+        }
+
         function validatePassword() {
             var password = document.getElementById("password").value;
             var confirm_password = document.getElementById("confirm_password").value;
 
-            // Check if passwords match
-            if (password != confirm_password) {
+            if (password !== confirm_password) {
                 alert("Passwords do not match");
                 return false;
             }
 
-            // Check password strength (customize as needed)
             var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
             if (!password.match(passwordRegex)) {
                 alert("Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 6 characters long");
@@ -52,6 +54,56 @@
 
             return true;
         }
+
+        function checkForm() {
+
+            var isValid = validateForm();
+            if (!isValid) {
+                // Re-enable the button if validation fails
+                document.getElementById("registerButton").disabled = false;
+                return false; // Return false to prevent form submission if validation fails
+            }
+
+            var formData = new FormData(document.getElementById("registrationForm"));
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/register", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        alert("User successfully registered");
+                        // Optionally, you can redirect or perform other actions upon successful registration
+                    } else if (xhr.status === 409) { 
+                        alert("Username already exists. Please choose a different username.");
+                    } else {
+                        console.error("Error checking form data");
+                    }
+
+                    // Re-enable the button after the request is complete
+                    document.getElementById("registerButton").disabled = false;
+                }
+            };
+
+            // Process and send form data
+            var urlEncodedData = "";
+            for (var pair of formData.entries()) {
+                if (urlEncodedData !== "") {
+                    urlEncodedData += "&";
+                }
+                urlEncodedData += encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]);
+            }
+            xhr.send(urlEncodedData);
+
+            // Prevent form submission since it's handled via AJAX
+            return false;
+        }
+
+
+    
+        // Event listener to check form data on form change
+        document.getElementById("submit").addEventListener("click", checkForm);
     </script>
+    
 </body>
 </html>

@@ -1,7 +1,6 @@
 #include "controller.hpp"
 
 auto handle_registration(HTTPRequest& req, int client_socket) -> void {
-
     std::string username = get_form_field(req.body, "username");
     std::string password = get_form_field(req.body, "password");
     std::string confirm_password = get_form_field(req.body, "confirm_password");
@@ -18,8 +17,7 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
        std::string response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
         send(client_socket, response.c_str(), response.length(), 0);
     };
-    
-    // We do server side validation despite there being client side validation in place
+
     std::regex passwordRegex("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$");
 
     if (username.empty() || password.empty() || confirm_password.empty()) {
@@ -37,23 +35,25 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
     if (password != confirm_password) {
         send_bad_request(client_socket);
         std::cerr << "Error: Password mismatch!\n";
-
         return;
     }
 
     if (db.username_exists(username)) {
-        send_bad_request(client_socket);
-        std::cerr << "Error: User exists!\n";
+        std::string response = "HTTP/1.1 409 Conflict\r\nContent-Length: 0\r\n\r\n";
+        send(client_socket, response.c_str(), response.length(), 0);
         return;
     }
 
-    // Insert the new user into the database
-    bool is_admin = admin_checkbox == "on"; 
+
+
+    bool is_admin = (admin_checkbox == "on");
     if (!db.insert_user(username, password, is_admin)) {
         std::cerr << "Error: Failed to insert user into database" << std::endl;
         send_internal_server_error(client_socket);
         return;
     }
 
-
+    // Successful registration response
+    std::string success_response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
+    send(client_socket, success_response.c_str(), success_response.length(), 0);
 }
