@@ -1,7 +1,7 @@
 #include "controller.hpp"
 
 auto handle_registration(HTTPRequest& req, int client_socket) -> void {
-    
+
     std::string username = get_form_field(req.body, "username");
     std::string password = get_form_field(req.body, "password");
     std::string confirm_password = get_form_field(req.body, "confirm_password");
@@ -44,8 +44,6 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
         send(client_socket, response.c_str(), response.length(), 0);
         return;
     }
-
-
 
     bool is_admin = (admin_checkbox == "on");
     if (!db.insert_user(username, password, is_admin)) {
