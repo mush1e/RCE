@@ -2,6 +2,7 @@
 #include <string>
 #include <ctime>
 #include <unordered_map>
+#include <random>
 #include <mutex>
 
 #ifndef SESSION_MANAGEMENT_HPP
@@ -22,8 +23,8 @@ class SessionManager {
 
     public:
         static SessionManager& get_instance();
-        bool isValidSession(const std::string& sessionId) const;
-        std::string createSession(const std::string& userId);
+        bool isValidSession(const std::string& sessionId);
+        std::string createSession(const std::string& userId); 
         std::string generateSessionId();
         bool logout(const std::string& sessionId);
 };
