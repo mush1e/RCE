@@ -56,3 +56,45 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
     std::string success_response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
     send(client_socket, success_response.c_str(), success_response.length(), 0);
 }
+
+auto handle_authentication(HTTPRequest& req, int client_socket) -> void {
+
+    std::string username = get_form_field(req.body, "username");
+    std::string password = get_form_field(req.body, "password");
+
+    Database& db = Database::getInstance();
+
+    auto send_bad_request = [](int client_socket) {
+        std::string response = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+        send(client_socket, response.c_str(), response.length(), 0);
+    };
+
+    auto send_internal_server_error = [](int client_socket) {
+       std::string response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
+        send(client_socket, response.c_str(), response.length(), 0);
+    };
+
+    if (username.empty() || password.empty()) {
+        send_bad_request(client_socket);
+        std::cerr << "Error: Empty Fields!\n";
+        return;
+    }
+
+    // Check if the username and password match
+    if (!db.login(username, password)) {
+        // If the credentials don't match, send unauthorized response
+        std::string response = "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\n\r\n";
+        send(client_socket, response.c_str(), response.length(), 0);
+        return;
+    }
+
+    /// Generate a session ID
+    SessionManager& sessionManager = SessionManager::get_instance();
+    std::string sessionId = sessionManager.createSession(username);
+
+    // Send successful authentication response with session ID
+    std::string success_response = "HTTP/1.1 200 OK\r\n";
+    success_response += "Set-Cookie: session_id=" + sessionId + "\r\n";
+    success_response += "Content-Length: 0\r\n\r\n";
+    send(client_socket, success_response.c_str(), success_response.length(), 0);
+}

@@ -1,5 +1,6 @@
 #include <regex>
 #include "request_handler.hpp"
+#include "session_management.hpp"
 #include "database.hpp"
 #include "utils.hpp"
 
@@ -7,5 +8,5 @@
 #define CONTRILLER_HPP
 
 void handle_registration(HTTPRequest& req, int client_socket);
-
+void handle_authentication(HTTPRequest& req, int client_socket);
 #endif

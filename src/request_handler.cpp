@@ -53,6 +53,9 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         
         if (req.URI == "/register") 
             handle_registration(req, client_socket);
+
+        else if (req.URI == "/register") 
+            handle_authentication(req, client_socket);
         
          else 
             sendNotFoundResponse(client_socket);
