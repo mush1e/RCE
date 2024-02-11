@@ -22,6 +22,7 @@ public:
 
     // Query functions
     bool username_exists(const std::string& username);
+    bool login(const std::string& username, const std::string& password);
     bool insert_user(const std::string& username, const std::string& password, bool is_admin);
 };
 

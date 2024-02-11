@@ -144,3 +144,30 @@ bool Database::insert_user(const std::string& username, const std::string& passw
 
     return execute_query(query.c_str());
 }
+
+bool Database::login(const std::string& username, const std::string& password) {
+    std::string sanitized_username = sanitize_input(username);
+    std::string sanitized_password = sanitize_input(password);
+
+    // Retrieve the salt and hashed password from the database for the provided username
+    std::string query = "SELECT password_salt, password_hash FROM users WHERE username = '" + sanitized_username + "'";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        return false;
+    }
+
+    std::string stored_salt;
+    std::string stored_hash;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        stored_salt = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        stored_hash = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+    }
+    sqlite3_finalize(stmt);
+
+    // Hash the provided password with the retrieved salt and compare it with the stored hash
+    std::string salted_password = stored_salt + sanitized_password;
+    std::string hashed_password = hash_password(salted_password);
+
+    return hashed_password == stored_hash;
+}
