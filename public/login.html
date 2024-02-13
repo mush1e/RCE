@@ -10,17 +10,75 @@
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Login</h2>
-        <form action="/login" method="post">
+        <form id="loginForm">
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter password">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
             </div>
-            <button type="submit" class="btn btn-primary mt-3">Login</button>
+            <button type="button" id="submit" class="btn btn-primary mt-3">Login</button>
         </form>
     </div>
+    
+    <script>
+        // function validateForm() {
+        //     var password = document.getElementById("password").value;
+        //     var confirm_password = document.getElementById("confirm_password").value;
+
+        //     var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
+        //     if (!password.match(passwordRegex)) {
+        //         alert("Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 6 characters long");
+        //         return false;
+        //     }
+
+        //     return true;
+        // }
+
+        function checkForm() {
+
+            // var isValid = validateForm();
+            // if (!isValid) {
+            //     document.getElementById("registerButton").disabled = false;
+            //     return false; 
+            // }
+            var formData = new FormData(document.getElementById("loginForm"));
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/login", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        alert("User successfully logged in!");
+                    } else if (xhr.status === 401) { 
+                        alert("Invalid Credentials! Try again");
+                    } else {
+                        console.error("Error checking form data");
+                    }
+                    document.getElementById("registerButton").disabled = false;
+                }
+            };
+
+            // Process and send form data
+            var urlEncodedData = "";
+            for (var pair of formData.entries()) {
+                if (urlEncodedData !== "") {
+                    urlEncodedData += "&";
+                }
+                urlEncodedData += encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]);
+            }
+            xhr.send(urlEncodedData);
+
+            // Prevent form submission since it's handled via AJAX
+            return false;
+        }
+
+        // Event listener to check form data on form change
+        document.getElementById("submit").addEventListener("click", checkForm);
+    </script>
+    
 </body>
 </html>
