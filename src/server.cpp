@@ -39,7 +39,7 @@ auto HTTP_Server::start() -> void {
     // Use the database instance to perform operations
     database.initialize_database();
     database.create_tables();
-
+    database.add_leetcode_problems();
     // Success message
     std::cout << "Server started. Listening on port " << this->port << "...\n";
 

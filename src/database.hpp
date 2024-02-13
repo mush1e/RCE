@@ -19,7 +19,10 @@ public:
     void create_tables();
     bool execute_query(const char*);
     std::string sanitize_input(const std::string& input) const;
-
+    sqlite3* getDBHandle() { return db; } 
+    // temp init function
+    void add_leetcode_problems();
+    
     // Query functions
     bool username_exists(const std::string& username);
     bool login(const std::string& username, const std::string& password);

@@ -30,34 +30,35 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <!-- Your custom JavaScript -->
     <script>
-       $(document).ready(function() {
-            // AJAX request to fetch problems data from server
-            $.ajax({
-                url: '/get_problems', // Endpoint to fetch problems data
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    // Populate the table with received data
-                    var tableBody = $('#problemsTableBody');
-                    tableBody.empty(); // Clear existing data
+        document.addEventListener("DOMContentLoaded", function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/get_problems", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
 
-                    // Iterate over each problem and append a table row
-                    data.forEach(function(problem) {
-                        var row = '<tr>' +
-                                    '<td>' + problem.author + '</td>' +
-                                    '<td>' + problem.title + '</td>' +
-                                    '<td><a href="view_problem.php?id=' + problem.id + '" class="btn btn-primary">View Problem</a></td>' +
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        var tableBody = document.getElementById("problemsTableBody");
+                        tableBody.innerHTML = ""; // Clear existing data
+
+                        data.forEach(function(problem) {
+                            var row = '<tr>' +
+                                '<td>' + problem.author + '</td>' +
+                                '<td>' + problem.title + '</td>' +
+                                '<td><a href="#" class="btn btn-primary">View Problem</a></td>' +
                                 '</tr>';
-                        tableBody.append(row);
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching problems data:', error);
-                    // Handle error gracefully, e.g., display a message to the user
+                            tableBody.innerHTML += row;
+                        });
+                    } else {
+                        console.error('Error fetching problems data:', xhr.statusText);
+                        // Handle error gracefully, e.g., display a message to the user
+                    }
                 }
-            });
+            };
+
+            xhr.send();
         });
- 
     </script>
 </body>
 </html>

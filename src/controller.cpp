@@ -99,4 +99,62 @@ auto handle_authentication(HTTPRequest& req, int client_socket) -> void {
     send(client_socket, success_response.c_str(), success_response.length(), 0);
 }
 
-void handle_get_problems(HTTPRequest& req, int client_socket) {}
+void handle_get_problems(HTTPRequest& req, int client_socket) {
+    // Get instance of your Database
+    Database& db = Database::getInstance();
+
+    // Execute SQL query to retrieve problems data from the database
+    std::string query = "SELECT questions.question_id, questions.question_title, users.username "
+                        "FROM questions "
+                        "INNER JOIN users ON questions.admin_id = users.user_id";
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        // Handle error gracefully
+        return;
+    }
+
+    // Define a string to hold the JSON response
+    std::string json_response = "[";
+
+    // Iterate over the results and construct JSON-like string
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        // Construct JSON-like string for each problem
+        std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+        
+        std::string problem_json = "{";
+        problem_json += "\"author\":\"" + author + "\",";
+        problem_json += "\"title\":\"" + title + "\",";
+        problem_json += "\"id\":" + std::to_string(sqlite3_column_int(stmt, 0));
+        problem_json += "}";
+
+        // Append the problem JSON-like string to the JSON response
+        json_response += problem_json;
+
+        // Add comma if not the last row
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            json_response += ",";
+        }
+}
+
+
+    // Finalize the SQL statement
+    sqlite3_finalize(stmt);
+
+    // Close the JSON array
+    json_response += "]";
+
+    // Construct HTTP response headers
+    std::string http_response = "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: application/json\r\n"
+                                "Content-Length: " + std::to_string(json_response.length()) + "\r\n"
+                                "\r\n" + json_response;
+
+    // Send response to the client
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
+
+    // Close the client socket
+    close(client_socket);
+}
