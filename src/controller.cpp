@@ -111,7 +111,6 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
         std::cerr << "Error preparing SQL statement" << std::endl;
-        // Handle error gracefully
         return;
     }
 
@@ -119,8 +118,9 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
     std::string json_response = "[";
 
     // Iterate over the results and construct JSON-like string
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        // Construct JSON-like string for each problem
+
+    for (auto stepResult = sqlite3_step(stmt); stepResult == SQLITE_ROW;) {
+
         std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
         std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
         
@@ -130,20 +130,17 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
         problem_json += "\"id\":" + std::to_string(sqlite3_column_int(stmt, 0));
         problem_json += "}";
 
-        // Append the problem JSON-like string to the JSON response
         json_response += problem_json;
+        stepResult = sqlite3_step(stmt);
 
         // Add comma if not the last row
-        if (sqlite3_step(stmt) == SQLITE_ROW) {
+        if (stepResult == SQLITE_ROW) {
             json_response += ",";
         }
-}
 
+    }
 
-    // Finalize the SQL statement
     sqlite3_finalize(stmt);
-
-    // Close the JSON array
     json_response += "]";
 
     // Construct HTTP response headers
