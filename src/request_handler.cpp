@@ -46,6 +46,9 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if (req.URI == "/register") 
             serveStaticFile("./public/register.html", client_socket);
         
+        else if (req.URI == "/get_problems") 
+            handle_get_problems(req, client_socket);
+
         else 
             sendNotFoundResponse(client_socket);
 

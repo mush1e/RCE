@@ -94,7 +94,9 @@ auto handle_authentication(HTTPRequest& req, int client_socket) -> void {
 
     // Send successful authentication response with session ID
     std::string success_response = "HTTP/1.1 200 OK\r\n";
-    success_response += "Set-Cookie: session_id=" + sessionId + "\r\n";
+    success_response += "Set-Cookie: session_id=" + sessionId + "; SameSite=None; Secure; HttpOnly\r\n";
     success_response += "Content-Length: 0\r\n\r\n";
     send(client_socket, success_response.c_str(), success_response.length(), 0);
 }
+
+void handle_get_problems(HTTPRequest& req, int client_socket) {}

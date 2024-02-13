@@ -24,26 +24,25 @@
     </div>
     
     <script>
-        // function validateForm() {
-        //     var password = document.getElementById("password").value;
-        //     var confirm_password = document.getElementById("confirm_password").value;
+        function validateForm() {
+            var password = document.getElementById("password").value;
 
-        //     var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
-        //     if (!password.match(passwordRegex)) {
-        //         alert("Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 6 characters long");
-        //         return false;
-        //     }
+            var passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
+            if (!password.match(passwordRegex)) {
+                alert("Password must contain at least one digit, one lowercase and one uppercase letter, and be at least 6 characters long");
+                return false;
+            }
 
-        //     return true;
-        // }
+            return true;
+        }
 
         function checkForm() {
 
-            // var isValid = validateForm();
-            // if (!isValid) {
-            //     document.getElementById("registerButton").disabled = false;
-            //     return false; 
-            // }
+            var isValid = validateForm();
+            if (!isValid) {
+                document.getElementById("submit").disabled = false;
+                return false; 
+            }
             var formData = new FormData(document.getElementById("loginForm"));
 
             var xhr = new XMLHttpRequest();
@@ -58,7 +57,7 @@
                     } else {
                         console.error("Error checking form data");
                     }
-                    document.getElementById("registerButton").disabled = false;
+                    document.getElementById("submit").disabled = false;
                 }
             };
 

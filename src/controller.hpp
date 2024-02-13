@@ -9,4 +9,5 @@
 
 void handle_registration(HTTPRequest& req, int client_socket);
 void handle_authentication(HTTPRequest& req, int client_socket);
+void handle_get_problems(HTTPRequest& req, int client_socket);
 #endif
