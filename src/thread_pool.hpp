@@ -19,7 +19,6 @@ class ThreadPool {
     public:
         ThreadPool(size_t);
         ~ThreadPool();        
-        static ThreadPool& get_instance();
         void enqueue(void (*fptr)(int),int);
 };
 

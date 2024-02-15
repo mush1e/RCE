@@ -12,12 +12,14 @@
 #define SERVER_HPP
 
 #include "database.hpp"
+#include "thread_pool.hpp"
 #include "request_handler.hpp"
 
 
 class HTTP_Server {
     int server_socket {};
     int port {};
+    ThreadPool thread_pool {4};
     sockaddr_in server_address;
 
     public:
