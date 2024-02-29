@@ -1,71 +1,80 @@
 #include "request_handler.hpp"
 #include "controller.hpp"
 #include "utils.hpp"
+#include <unordered_map>
 
 void serveStaticFile(const std::string& filePath, int client_socket) {
-    
+
     std::ifstream file(filePath);
-    
+
     if (file.good()) {
         std::stringstream buffer;
         buffer << file.rdbuf();
         std::string content = buffer.str();
 
-        std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " 
-                                + std::to_string(content.length()) 
-                                + "\r\n\r\n" 
+        std::string response = "HTTP/1.1 200 OK\r\nContent-Length: "
+                                + std::to_string(content.length())
+                                + "\r\n\r\n"
                                 + content;
-    
+
         send(client_socket, response.c_str(), response.length(), 0);
-    } 
-    else 
+    }
+    else
         sendNotFoundResponse(client_socket);
 }
 
 void sendNotFoundResponse(int client_socket) {
-    
+
     std::string notFoundContent = "<h1>404 Not Found</h1>";
 
-    std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: " 
-                            + std::to_string(notFoundContent.length()) 
-                            + "\r\n\r\n" 
+    std::string response = "HTTP/1.1 404 Not Found\r\nContent-Length: "
+                            + std::to_string(notFoundContent.length())
+                            + "\r\n\r\n"
                             + notFoundContent;
-    
+
     send(client_socket, response.c_str(), response.length(), 0);
 }
 
 auto handle_request(HTTPRequest& req, int client_socket) -> void {
-    if (req.method == "GET") 
+    if (req.method == "GET")
 
-        if (req.URI == "/") 
+        if (req.URI == "/")
             serveStaticFile("./public/index.html", client_socket);
 
-        else if (req.URI == "/login") 
+        else if (req.URI == "/login")
             serveStaticFile("./public/login.html", client_socket);
 
-        else if (req.URI == "/register") 
+        else if (req.URI == "/register")
             serveStaticFile("./public/register.html", client_socket);
-        
-        else if (req.URI == "/get_problems") 
+
+        else if (req.URI == "/get_problems")
             handle_get_problems(req, client_socket);
 
-        else 
+        else if (req.URI.find("/view_problem") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end()) {}
+                // handle_view_problem()
+            else
+                sendNotFoundResponse(client_socket);
+        }
+
+        else
             sendNotFoundResponse(client_socket);
 
-    else if (req.method == "POST") 
-        
-        if (req.URI == "/register") 
+    else if (req.method == "POST")
+
+        if (req.URI == "/register")
             handle_registration(req, client_socket);
 
-        else if (req.URI == "/login") 
+        else if (req.URI == "/login")
             handle_authentication(req, client_socket);
-        
-         else 
+
+         else
             sendNotFoundResponse(client_socket);
-        
-    else 
+
+    else
         sendNotFoundResponse(client_socket);
-    
+
 }
 
 void sendMethodNotAllowedResponse(int client_socket) {
@@ -127,10 +136,10 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
                 if (iss.read(&body_content[0], content_length)) {
 
                     // URL decoding for form data
-                    if (req.headers[0].second == "application/x-www-form-urlencoded") 
+                    if (req.headers[0].second == "application/x-www-form-urlencoded")
                         parse_form_data(body_content, req);
 
-                    else 
+                    else
                         req.body = body_content;
                 }
             }
@@ -147,7 +156,7 @@ void handle_client(int client_socket) {
     // instance of the HTTP Request struct
     HTTPRequest request {};
 
-    // Read the request string into the buffer 
+    // Read the request string into the buffer
     char BUFFER[8192];
     ssize_t bytes_read = recv(client_socket, BUFFER, sizeof(BUFFER), 0);
 
@@ -156,7 +165,7 @@ void handle_client(int client_socket) {
         std::cerr << "Error: Client disconnected from server!\n";
         close(client_socket);
         return;
-    } 
+    }
     else if (bytes_read <= 0) {
         std::cerr << "Error: Error reading request string!\n";
         close(client_socket);
@@ -173,6 +182,28 @@ void handle_client(int client_socket) {
 
     // once done close this socket
     close(client_socket);
+}
 
+auto parse_parameters(std::string uri) -> std::unordered_map<std::string, std::string> {
+    std::unordered_map<std::string, std::string> params_map;
+    size_t pos = uri.find('?');
 
+    if(pos == std::string::npos)
+        return params_map;
+
+    std::string param_str = uri.substr(pos+1);
+    int separator_idx {} , equal_idx {};
+    for(;;) {
+        equal_idx = param_str.find_first_of('=');
+
+        separator_idx = param_str.find_first_of('&') != std::string::npos
+                                ? param_str.find_first_of('&')
+                                : param_str.size();
+
+        if (equal_idx == std::string::npos)
+            break;
+        params_map[param_str.substr(0, equal_idx)] = param_str.substr(equal_idx + 1, separator_idx - equal_idx - 1);
+    }
+
+    return params_map;
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <unordered_map>
 
 #ifndef REQUEST_HANDLER_HPP
 #define REQUEST_HANDLER_HPP
@@ -24,5 +25,6 @@ void handle_request(HTTPRequest& req, int client_socket);
 void parse_form_data(const std::string& form_data, HTTPRequest& req);
 void serveStaticFile(const std::string& filePath, int client_socket);
 void sendNotFoundResponse(int client_socket);
+std::unordered_map<std::string, std::string> parse_parameters(std::string uri);
 
 #endif // REQUEST_HANDLER_HPP
