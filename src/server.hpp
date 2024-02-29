@@ -12,6 +12,7 @@
 #define SERVER_HPP
 
 #include "database.hpp"
+#include "threadpool.hpp"
 #include "request_handler.hpp"
 
 
@@ -19,6 +20,7 @@ class HTTP_Server {
     int server_socket {};
     int port {};
     sockaddr_in server_address;
+    ThreadPool thread_pool{4};
 
     public:
         HTTP_Server(int port);

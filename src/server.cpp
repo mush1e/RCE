@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 HTTP_Server::HTTP_Server(int port) : port(port) {
-    
+
     // Try creating the TCP socket, if it doesnt work exit
     if((this->server_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Error: Failed to create socket!\n";
@@ -55,8 +55,12 @@ auto HTTP_Server::start() -> void {
         }
 
         // Create a threat to handle this request and then detach it so it just does its own thing
-        std::thread client_thread(handle_client, client_socket);
-        client_thread.detach();
+        // std::thread client_thread(handle_client, client_socket);
+        // client_thread.detach();
+        //
+        thread_pool.enqueue([client_socket]() {
+                handle_client(client_socket);
+            });
     }
 
 
