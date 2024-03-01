@@ -1,6 +1,6 @@
 #include "controller.hpp"
 
-auto handle_registration(HTTPRequest& req, int client_socket) -> void {
+void handle_registration(HTTPRequest& req, int client_socket) {
 
     std::string username = get_form_field(req.body, "username");
     std::string password = get_form_field(req.body, "password");
@@ -57,7 +57,7 @@ auto handle_registration(HTTPRequest& req, int client_socket) -> void {
     send(client_socket, success_response.c_str(), success_response.length(), 0);
 }
 
-auto handle_authentication(HTTPRequest& req, int client_socket) -> void {
+void handle_authentication(HTTPRequest& req, int client_socket){
 
     std::string username = get_form_field(req.body, "username");
     std::string password = get_form_field(req.body, "password");
@@ -123,7 +123,7 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
 
         std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
         std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-        
+
         std::string problem_json = "{";
         problem_json += "\"author\":\"" + author + "\",";
         problem_json += "\"title\":\"" + title + "\",";
@@ -155,3 +155,51 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
     // Close the client socket
     close(client_socket);
 }
+
+void handle_view_problem(HTTPRequest &req, int client_socket, int problem_id) {
+    Database& db = Database::getInstance();
+    
+    // Construct the SQL query with proper syntax
+    std::string query = "SELECT questions.question_title, questions.question_text, users.username "
+                        "FROM questions "
+                        "INNER JOIN users ON questions.admin_id = users.user_id "
+                        "WHERE questions.question_id = " + std::to_string(problem_id);
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        return;
+    }
+
+    // Execute the prepared statement
+    if (sqlite3_step(stmt) != SQLITE_ROW) {
+        std::cerr << "No rows returned" << std::endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    // Extract data from the result set
+    std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+    std::string text(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+    std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+
+    // Build the JSON response string
+    std::string json_response = "{";
+    json_response += "\"author\":\"" + author + "\",";
+    json_response += "\"title\":\"" + title + "\",";
+    json_response += "\"text\":\"" + text + "\""; // Enclose text within double quotes
+    json_response += "}";
+
+    // Build the HTTP response
+    std::string http_response = "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: application/json\r\n"
+                                "Content-Length: " + std::to_string(json_response.length()) + "\r\n"
+                                "\r\n" + json_response;
+
+    // Send the HTTP response
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
+
+    // Finalize the prepared statement
+    sqlite3_finalize(stmt);
+}
+

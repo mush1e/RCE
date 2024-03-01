@@ -52,8 +52,17 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if (req.URI.find("/view_problem") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
-            if (params.find("id") != params.end()) {}
-                // handle_view_problem()
+            std::cout << params["id"] << std::endl;
+            if (params.find("id") != params.end())
+                serveStaticFile("./public/view_problem.html", client_socket);
+            else
+                sendNotFoundResponse(client_socket);
+        }
+
+        else if (req.URI.find("/get_problem") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end())
+                handle_view_problem(req, client_socket, std::atoi(params["id"].c_str()));
             else
                 sendNotFoundResponse(client_socket);
         }
@@ -193,17 +202,29 @@ auto parse_parameters(std::string uri) -> std::unordered_map<std::string, std::s
 
     std::string param_str = uri.substr(pos+1);
     int separator_idx {} , equal_idx {};
-    for(;;) {
-        equal_idx = param_str.find_first_of('=');
+    size_t start = 0;
+       while (start < param_str.size()) {
+           // Find the position of the '&' character
+           size_t end = param_str.find('&', start);
+           if (end == std::string::npos) {
+               end = param_str.size();
+           }
 
-        separator_idx = param_str.find_first_of('&') != std::string::npos
-                                ? param_str.find_first_of('&')
-                                : param_str.size();
+           // Extract the key-value pair
+           std::string keyValue = param_str.substr(start, end - start);
 
-        if (equal_idx == std::string::npos)
-            break;
-        params_map[param_str.substr(0, equal_idx)] = param_str.substr(equal_idx + 1, separator_idx - equal_idx - 1);
-    }
+           // Find the position of the '=' character to split key and value
+           size_t separator = keyValue.find('=');
+           if (separator != std::string::npos) {
+               std::string key = keyValue.substr(0, separator);
+               std::string value = keyValue.substr(separator + 1);
+               // URL decoding may be necessary here depending on your requirements
+               params_map[key] = value;
+           }
+
+           // Move to the next key-value pair
+           start = end + 1;
+       }
 
     return params_map;
 }

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h2 id="problemTitle" class="card-title">Title</h2>
+            </div>
+            <div class="card-body">
+                <p id="problemStatement" class="card-text">Body</p>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function GetURLParameter(sParam) {
+            var sPageURL = window.location.search.substring(1);
+            var sURLVariables = sPageURL.split('&');
+            for (var i = 0; i < sURLVariables.length; i++) {
+                var sParameterName = sURLVariables[i].split('=');
+                if (sParameterName[0] == sParam) 
+                    return sParameterName[1];
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/get_problem?" + "id=" + GetURLParameter('id'), true)
+            console.log(GetURLParameter('id'))
+            xhr.setRequestHeader("Content-Type", "application/json")
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var problem = JSON.parse(xhr.responseText);
+                        var problemTitle = document.getElementById("problemTitle");
+                        var problemStatement = document.getElementById("problemStatement");
+                        problemTitle.innerHTML = problem.title;
+                        problemStatement.innerHTML = problem.text;
+                    } else 
+                        console.error('Error fetching problems data:', xhr.statusText);       
+                }
+            }
+            xhr.send();
+        });
+    </script>
+</body>
+</html>
