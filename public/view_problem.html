@@ -15,6 +15,10 @@
             </div>
             <div class="card-body">
                 <p id="problemStatement" class="card-text">Body</p>
+                <form id="submitForm" style="display: none;">
+                    <input type="file" name="file">
+                    <button type="submit">Submit File</button>
+                </form>
             </div>
         </div>
     </div>
@@ -46,6 +50,19 @@
                         var problemStatement = document.getElementById("problemStatement");
                         problemTitle.innerHTML = problem.title;
                         problemStatement.innerHTML = problem.text;
+
+                        var authXhr = new XMLHttpRequest();
+                        authXhr.open("GET", "/is_auth", true);
+                        authXhr.onreadystatechange = function() {
+                            if (authXhr.readyState === XMLHttpRequest.DONE) {
+                                if (authXhr.status === 200) {
+                                    // User is logged in, show the submit form
+                                    var submitForm = document.getElementById("submitForm");
+                                    submitForm.style.display = "block";
+                                }
+                            }
+                        }
+                        authXhr.send();
                     } else 
                         console.error('Error fetching problems data:', xhr.statusText);       
                 }
