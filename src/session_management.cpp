@@ -8,15 +8,15 @@ SessionManager& SessionManager::get_instance() {
 // Verify if session is valid
 bool SessionManager::isValidSession(const std::string& sessionId){
     std::lock_guard<std::mutex> lock(mtx);
-    auto it = sessions.find(sessionId);
-    if (it != sessions.end()) {
-        time_t currentTime = time(nullptr);
-        if (currentTime < it->second.expiry_time) {
-            return true; // Session is valid
-        } else {
-            sessions.erase(it); // Session has expired, remove it
+    for(auto session: sessions)
+        if (session.first.compare(sessionId)) {
+            time_t currentTime = time(nullptr);
+            if (currentTime < session.second.expiry_time) {
+                return true; // Session is valid
+            } else {
+                sessions.erase(session.first); // Session has expired, remove it
+            }
         }
-    }
     return false; // Session not found or expired
 }
 
