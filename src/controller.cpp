@@ -203,3 +203,27 @@ void handle_view_problem(HTTPRequest &req, int client_socket, int problem_id) {
     sqlite3_finalize(stmt);
 }
 
+void handle_is_auth(HTTPRequest& req, int client_socket) {
+    SessionManager& session = SessionManager::get_instance();
+    std::string http_response {};
+    
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                           [](const std::pair<std::string, std::string>& pair) {
+                               return pair.first == "session_id";
+                           });
+
+    if(it != req.cookies.end() && session.isValidSession(it->second)){
+
+        http_response = "HTTP/1.1 200 OK\r\n";
+        http_response += "Content-Type: text/plain\r\n";
+        http_response += "\r\n";
+        http_response += "Session ID is valid.\r\n";
+    
+
+    }else {
+        http_response = "HTTP/1.1 403 Forbidden\r\n";
+        http_response += "Content-Type: text/plain\r\n";
+        http_response += "\r\n";
+        http_response += "Forbidden: Invalid session ID.\r\n";
+    }
+}

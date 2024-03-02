@@ -50,6 +50,9 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if (req.URI == "/get_problems")
             handle_get_problems(req, client_socket);
 
+        else if(req.URI == "/is_logged_in")
+            handle_is_auth(req, client_socket);
+
         else if (req.URI.find("/view_problem") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
             std::cout << params["id"] << std::endl;
