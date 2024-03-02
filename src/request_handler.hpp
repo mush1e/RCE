@@ -16,6 +16,7 @@ struct HTTPRequest {
     std::string URI      {};
     std::string version  {};
     std::vector<std::pair<std::string, std::string>> headers {};
+    std::vector<std::pair<std::string, std::string>> cookies {};
     std::string body     {};
 };
 

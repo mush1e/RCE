@@ -132,6 +132,21 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
             value.erase(0, value.find_first_not_of(" \t"));
             value.erase(value.find_last_not_of(" \t") + 1);
             req.headers.emplace_back(key, value);
+            if (key == "Cookie") {
+                // Parse cookies
+                std::istringstream cookie_stream(value);
+                std::string cookie_pair;
+                while (std::getline(cookie_stream, cookie_pair, ';')) {
+                    size_t eq_pos = cookie_pair.find('=');
+                    if (eq_pos != std::string::npos) {
+                        std::string cookie_name = cookie_pair.substr(0, eq_pos);
+                        std::string cookie_value = cookie_pair.substr(eq_pos + 1);
+                        req.cookies.emplace_back(cookie_name, cookie_value);
+                    }
+                }
+            } else {
+                req.headers.emplace_back(key, value);
+            }
         }
     }
 
@@ -155,8 +170,6 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
             break; // Stop after finding Content-Length header
         }
     }
-
-    // display_request(req);
 }
 
 
