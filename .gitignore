@@ -22,3 +22,4 @@ obj/
 .vimrc
 
 db/*
+script_storage/

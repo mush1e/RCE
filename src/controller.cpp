@@ -227,3 +227,7 @@ void handle_is_auth(HTTPRequest& req, int client_socket) {
     }
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
+
+void handle_submission(HTTPRequest& req, int client_socket) {
+    
+}

@@ -80,6 +80,14 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if (req.URI == "/login")
             handle_authentication(req, client_socket);
+        
+        //TODO 
+        else if (req.URI == "/submit") 
+            handle_authentication(req, client_socket);
+
+        //TODO
+        else if (req.URI == "/run") 
+            handle_run(req, client_socket);
 
          else
             sendNotFoundResponse(client_socket);
@@ -217,7 +225,6 @@ auto parse_parameters(std::string uri) -> std::unordered_map<std::string, std::s
         return params_map;
 
     std::string param_str = uri.substr(pos+1);
-    int separator_idx {} , equal_idx {};
     size_t start = 0;
        while (start < param_str.size()) {
            // Find the position of the '&' character
