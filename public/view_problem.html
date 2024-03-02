@@ -15,10 +15,12 @@
             </div>
             <div class="card-body">
                 <p id="problemStatement" class="card-text">Body</p>
-                <form id="submitForm" style="display: none;">
-                    <input type="file" name="file">
-                    <button type="submit">Submit File</button>
-                </form>
+                <div class="form-group">
+                    <label for="fileInput">Choose File:</label>
+                    <input type="file" class="form-control-file" id="fileInput" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit File</button>
+
             </div>
         </div>
     </div>
