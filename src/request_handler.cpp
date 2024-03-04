@@ -86,8 +86,8 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
             handle_authentication(req, client_socket);
 
         //TODO
-        else if (req.URI == "/run") 
-            handle_run(req, client_socket);
+        else if (req.URI == "/run") {}
+            // handle_run(req, client_socket);
 
          else
             sendNotFoundResponse(client_socket);
