@@ -15,7 +15,7 @@
             </div>
             <div class="card-body">
                 <p id="problemStatement" class="card-text">Body</p>
-                <div class="form-group">
+                <div class="form-group" id="submitFormGroup" style="display: none;">
                     <label for="fileInput">Choose File:</label>
                     <input type="file" class="form-control-file" id="fileInput" name="file" accept=".py">
                     <br/>
@@ -40,11 +40,10 @@
                     return sParameterName[1];
             }
         }
-
+    
         document.addEventListener("DOMContentLoaded", function() {
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/get_problem?" + "id=" + GetURLParameter('id'), true)
-            console.log(GetURLParameter('id'))
+            xhr.open("GET", "/get_problem?id=" + GetURLParameter('id'), true)
             xhr.setRequestHeader("Content-Type", "application/json")
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -54,15 +53,15 @@
                         var problemStatement = document.getElementById("problemStatement");
                         problemTitle.innerHTML = problem.title;
                         problemStatement.innerHTML = problem.text;
-
+    
                         var authXhr = new XMLHttpRequest();
                         authXhr.open("GET", "/is_auth", true);
                         authXhr.onreadystatechange = function() {
                             if (authXhr.readyState === XMLHttpRequest.DONE) {
                                 if (authXhr.status === 200) {
                                     // User is logged in, show the submit form
-                                    var submitForm = document.getElementById("submitForm");
-                                    submitForm.style.display = "block";
+                                    var submitFormGroup = document.getElementById("submitFormGroup");
+                                    submitFormGroup.style.display = "block";
                                 }
                             }
                         }
@@ -74,5 +73,7 @@
             xhr.send();
         });
     </script>
+    
+        
 </body>
 </html>

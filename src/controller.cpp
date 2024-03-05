@@ -243,7 +243,6 @@ void handle_logout(HTTPRequest& req, int client_socket) {
     
     http_response = "HTTP/1.1 200 OK\r\n";
     http_response += "Content-Type: text/plain\r\n";
-    http_response += "Set-Cookie: session_id=;";
     http_response += "\r\n";
     http_response += "User has been Logged out.\r\n";
 
