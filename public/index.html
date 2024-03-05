@@ -16,13 +16,8 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">Register</a>
-                </li>
+            <ul class="navbar-nav ml-auto" id="navItemList">
+
             </ul>
         </div>
     </nav>
@@ -50,33 +45,57 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/get_problems", true);
-            xhr.setRequestHeader("Content-Type", "application/json");
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "/get_problems", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
 
-            xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    var tableBody = document.getElementById("problemsTableBody");
-                    tableBody.innerHTML = ""; // Clear existing data
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                var tableBody = document.getElementById("problemsTableBody");
+                tableBody.innerHTML = ""; // Clear existing data
 
-                    data.forEach(function(problem) {
-                        var row = '<tr>' +
-                            '<td>' + problem.author + '</td>' +
-                            '<td>' + problem.title + '</td>' +
-                            '<td><a href="/view_problem?id=' + problem.id + '" class="btn btn-primary">View Problem</a></td>' +
-                            '</tr>';
-                        tableBody.innerHTML += row;
+                var navItemList = document.getElementById("navItemList"); // Moved here
+
+                data.forEach(function(problem) {
+                    var row = '<tr>' +
+                        '<td>' + problem.author + '</td>' +
+                        '<td>' + problem.title + '</td>' +
+                        '<td><a href="/view_problem?id=' + problem.id + '" class="btn btn-primary">View Problem</a></td>' +
+                        '</tr>';
+                    tableBody.innerHTML += row;
                     });
-                } else {
-                    console.error('Error fetching problems data:', xhr.statusText);
-                    // Handle error gracefully, e.g., display a message to the user
-                }
+                    var authXhr = new XMLHttpRequest();
+                    authXhr.open("GET", "/is_auth", true);
+
+                    authXhr.onreadystatechange = function() {
+                        if (authXhr.readyState === XMLHttpRequest.DONE) {
+                            if (authXhr.status === 200) {
+                                // User is logged in, show the submit form
+                                navItemList.innerHTML += '<li class="nav-item">' +
+                                    `<a class="nav-link" href="/logout">logout</a>`
+                                    + `</li>`;
+                            } else {
+                                navItemList.innerHTML += '<li class="nav-item">' +
+                                    '<a class="nav-link" href="/login">Login</a></li>' +
+                                    '<li class="nav-item">' +
+                                    '<a class="nav-link" href="/register">Register</a>'
+                                    + '</li>';
+                            }
+                        }
+                    };
+
+                    authXhr.send(); // Sending the XMLHttpRequest
+            } else {
+                console.error('Error fetching problems data:', xhr.statusText);
+                // Handle error gracefully, e.g., display a message to the user
             }
-        };
-            xhr.send();
-        });
+        }
+    };
+    xhr.send();
+});
+
     </script>
 </body>
 </html>
