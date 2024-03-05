@@ -231,3 +231,22 @@ void handle_is_auth(HTTPRequest& req, int client_socket) {
 void handle_submission(HTTPRequest& req, int client_socket) {
     
 }
+
+void handle_logout(HTTPRequest& req, int client_socket) {
+    std::string http_response {};
+    SessionManager& session_manager = SessionManager::get_instance();
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                           [](const std::pair<std::string, std::string>& pair) {
+                               return pair.first == "session_id";
+                           });
+    it != req.cookies.end() && session_manager.logout(it->first);
+    
+    http_response = "HTTP/1.1 200 OK\r\n";
+    http_response += "Content-Type: text/plain\r\n";
+    http_response += "Set-Cookie: session_id=;";
+    http_response += "\r\n";
+    http_response += "User has been Logged out.\r\n";
+
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
+
+}

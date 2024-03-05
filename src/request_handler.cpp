@@ -70,6 +70,10 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
                 sendNotFoundResponse(client_socket);
         }
 
+        else if(req.URI == "/logout") {
+            handle_logout(req, client_socket);
+        }
+
         else
             sendNotFoundResponse(client_socket);
 
