@@ -47,10 +47,11 @@ std::string SessionManager::createSession(const std::string& userId) {
 
 bool SessionManager::logout(const std::string& sessionId) {
     std::lock_guard<std::mutex> lock(mtx);
-    auto it = sessions.find(sessionId);
-    if (it != sessions.end()) {
-        sessions.erase(it); // Remove the session
-        return true; // Logout successful
-    }
+    for(auto session: sessions)
+        if (session.first.compare(sessionId)) {
+            sessions.erase(session.first); 
+            return true; // Logout successful
+        }
+
     return false; // Session ID not found
 }

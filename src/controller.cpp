@@ -239,7 +239,11 @@ void handle_logout(HTTPRequest& req, int client_socket) {
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
                            });
-    it != req.cookies.end() && session_manager.logout(it->first);
+                           
+    if (it != req.cookies.end()) {
+        session_manager.logout(it->first);
+    }
+
     
     http_response = "HTTP/1.1 200 OK\r\n";
     http_response += "Content-Type: text/plain\r\n";
