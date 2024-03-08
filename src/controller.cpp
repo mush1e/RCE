@@ -255,6 +255,11 @@ void handle_logout(HTTPRequest& req, int client_socket) {
 }
 
 void handle_search(HTTPRequest& req, int client_socket, std::string search_query) {
-     Database& db = Database::getInstance();
-     
+    Database& db = Database::getInstance();
+    search_query = db.sanitize_input(search_query);
+
+    std::string sql_query = "SELECT * FROM problems WHERE title LIKE '%" 
+                            + search_query + "%';";
+    
+    
 }
