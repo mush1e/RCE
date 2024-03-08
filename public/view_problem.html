@@ -8,6 +8,20 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <a class="navbar-brand" href="/">RCE</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto" id="navItemList">
+
+            </ul>
+        </div>
+    </nav>
+
     <div class="container mt-5">
         <div class="card">
             <div class="card-header">
@@ -54,6 +68,8 @@
                         problemTitle.innerHTML = problem.title;
                         problemStatement.innerHTML = problem.text;
     
+                        var navItemList = document.getElementById("navItemList"); // Moved here
+
                         var authXhr = new XMLHttpRequest();
                         authXhr.open("GET", "/is_auth", true);
                         authXhr.onreadystatechange = function() {
@@ -62,6 +78,16 @@
                                     // User is logged in, show the submit form
                                     var submitFormGroup = document.getElementById("submitFormGroup");
                                     submitFormGroup.style.display = "block";
+                                    navItemList.innerHTML += '<li class="nav-item">' +
+                                    `<a class="nav-link" href="/logout">logout</a>`
+                                    + `</li>`;
+                                }
+                                else {
+                                    navItemList.innerHTML += '<li class="nav-item">' +
+                                    '<a class="nav-link" href="/login">Login</a></li>' +
+                                    '<li class="nav-item">' +
+                                    '<a class="nav-link" href="/register">Register</a>'
+                                    + '</li>';
                                 }
                             }
                         }
