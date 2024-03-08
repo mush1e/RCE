@@ -228,6 +228,7 @@ void handle_is_auth(HTTPRequest& req, int client_socket) {
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
 
+// TODO
 void handle_submission(HTTPRequest& req, int client_socket) {
     
 }
@@ -258,8 +259,60 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
     Database& db = Database::getInstance();
     search_query = db.sanitize_input(search_query);
 
-    std::string sql_query = "SELECT * FROM problems WHERE title LIKE '%" 
-                            + search_query + "%';";
+    std::string query = "SELECT questions.question_id, questions.question_title, users.username "
+                            "FROM questions "
+                            "INNER JOIN users ON questions.admin_id = users.user_id "
+                            "WHERE LOWER(questions.question_title) LIKE LOWER('" + search_query + "')";
+
     
-    
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        return;
+    }
+
+    if (sqlite3_step(stmt) != SQLITE_ROW) {
+        std::cerr << "No rows returned" << std::endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    std::string json_response = "[";
+
+    // Iterate over the results and construct JSON-like string
+
+    for (auto stepResult = sqlite3_step(stmt); stepResult == SQLITE_ROW;) {
+
+        std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+        std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+
+        std::string problem_json = "{";
+        problem_json += "\"author\":\"" + author + "\",";
+        problem_json += "\"title\":\"" + title + "\",";
+        problem_json += "\"id\":" + std::to_string(sqlite3_column_int(stmt, 0));
+        problem_json += "}";
+
+        json_response += problem_json;
+        stepResult = sqlite3_step(stmt);
+
+        // Add comma if not the last row
+        if (stepResult == SQLITE_ROW) {
+            json_response += ",";
+        }
+
+    }
+
+    sqlite3_finalize(stmt);
+    json_response += "]";
+
+    std::string http_response = "HTTP/1.1 200 OK\r\n"
+                                "Content-Type: application/json\r\n"
+                                "Content-Length: " + std::to_string(json_response.length()) + "\r\n"
+                                "\r\n" + json_response;
+
+    // Send response to the client
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
+
+    // Close the client socket
+    close(client_socket);
 }

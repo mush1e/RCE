@@ -96,13 +96,14 @@
 
                     authXhr.send(); // Sending the XMLHttpRequest
 
-                    var searchButton = document.getElementById("searchButton");
-                    var searchInput = document.getElementById("searchInput");
                     searchButton.addEventListener("click", function() {
+                        var searchButton = document.getElementById("searchButton");
+                        var searchInput = document.getElementById("searchInput");
                         var searchQuery = searchInput.value.trim();
+                        var searchXhr = new XMLHttpRequest();
+                        searchXhr.open("GET", "/search?query=" + encodeURIComponent(searchQuery), true);
+
                         if (searchQuery != "") {
-                            var searchXhr = XMLHttpRequest();
-                            searchXhr.open("GET", "/search?query=" + encodeURIComponent(searchQuery), true);
                             searchXhr.setRequestHeader("Content-Type", "application/json");
                             searchXhr.onreadystatechange = function() {
                                 if(searchXhr.readyState = XMLHttpRequest.DONE) {
@@ -117,8 +118,8 @@
                             }
 
                         }
+                        searchXhr.send();
                     });
-                    searchXhr.send();
 
             } else {
                 console.error('Error fetching problems data:', xhr.statusText);
@@ -130,17 +131,18 @@
 });
 
 function displaySearchResults(results) {
-            problemsTableBody.innerHTML = ""; // Clear existing data
+    var problemsTableBody = document.getElementById("problemsTableBody");
+    problemsTableBody.innerHTML = ""; // Clear existing data
 
-            results.forEach(function(result) {
-                var row = '<tr>' +
-                    '<td>' + result.author + '</td>' +
-                    '<td>' + result.title + '</td>' +
-                    '<td><a href="/view_problem?id=' + result.id + '" class="btn btn-primary">View Problem</a></td>' +
-                    '</tr>';
-                problemsTableBody.innerHTML += row;
-            });
-        }
+    results.forEach(function(result) {
+        var row = '<tr>' +
+            '<td>' + result.author + '</td>' +
+            '<td>' + result.title + '</td>' +
+            '<td><a href="/view_problem?id=' + result.id + '" class="btn btn-primary">View Problem</a></td>' +
+            '</tr>';
+        problemsTableBody.innerHTML += row;
+    });
+}
     </script>
 </body>
 </html>
