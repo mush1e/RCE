@@ -253,3 +253,8 @@ void handle_logout(HTTPRequest& req, int client_socket) {
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 
 }
+
+void handle_search(HTTPRequest& req, int client_socket, std::string search_query) {
+     Database& db = Database::getInstance();
+     
+}

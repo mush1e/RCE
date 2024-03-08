@@ -15,6 +15,7 @@ void handle_is_auth(HTTPRequest& req, int client_socket);
 void handle_submission(HTTPRequest& req, int client_socket);
 void handle_run(HTTPRequest& req, int client_socket);
 void handle_logout(HTTPRequest& req, int client_socket);
+void handle_search(HTTPRequest& req, int client_socket);
 
 
 #endif

@@ -234,3 +234,11 @@ void Database::add_leetcode_problems() {
         }
     }
 }
+
+// bool Database::search_problem(std::string& search_params) {
+//     search_params = sanitize_input(search_params);
+//     std::string query = "SELECT question_title FROM questions WHERE question_title LIKE '%"
+//                         + search_params + "%'";
+    
+
+// }
