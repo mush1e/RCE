@@ -112,7 +112,8 @@
                                         displaySearchResults(searchResults);
                                     }
                                     else {
-                                        console.error('Error fetching search results:', searchXhr.statusText);
+                                        var searchResults = JSON.parse(xhr.responseText);
+                                        displaySearchResults(searchResults);
                                     }
                                 }
                             }

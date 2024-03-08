@@ -257,7 +257,9 @@ void handle_logout(HTTPRequest& req, int client_socket) {
 
 void handle_search(HTTPRequest& req, int client_socket, std::string search_query) {
     Database& db = Database::getInstance();
+    std::cout << search_query << std::endl;
     search_query = db.sanitize_input(search_query);
+    std::cout << search_query << std::endl;
 
     std::string query = "SELECT questions.question_id, questions.question_title, users.username "
                             "FROM questions "
@@ -300,7 +302,6 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
         if (stepResult == SQLITE_ROW) {
             json_response += ",";
         }
-
     }
 
     sqlite3_finalize(stmt);
@@ -317,3 +318,6 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
     // Close the client socket
     close(client_socket);
 }
+
+
+
