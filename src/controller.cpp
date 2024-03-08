@@ -262,7 +262,7 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
     std::string query = "SELECT questions.question_id, questions.question_title, users.username "
                             "FROM questions "
                             "INNER JOIN users ON questions.admin_id = users.user_id "
-                            "WHERE LOWER(questions.question_title) LIKE LOWER('" + search_query + "')";
+                            "WHERE LOWER(questions.question_title) LIKE LOWER('%" + search_query + "%')";
 
     
     sqlite3_stmt* stmt;
@@ -285,7 +285,8 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
 
         std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
         std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-
+        
+        
         std::string problem_json = "{";
         problem_json += "\"author\":\"" + author + "\",";
         problem_json += "\"title\":\"" + title + "\",";
