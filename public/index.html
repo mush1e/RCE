@@ -108,11 +108,11 @@
                             searchXhr.onreadystatechange = function() {
                                 if(searchXhr.readyState = XMLHttpRequest.DONE) {
                                     if(searchXhr.status === 200) {
-                                        var searchResults = JSON.parse(xhr.responseText);
+                                        var searchResults = JSON.parse(searchXhr.responseText);
                                         displaySearchResults(searchResults);
                                     }
                                     else {
-                                        console.error('Error fetching search results:', xhr.statusText);
+                                        console.error('Error fetching search results:', searchXhr.statusText);
                                     }
                                 }
                             }
