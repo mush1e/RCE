@@ -256,9 +256,10 @@ void handle_logout(HTTPRequest& req, int client_socket) {
 }
 
 void handle_search(HTTPRequest& req, int client_socket, std::string search_query) {
-    
+
     Database& db = Database::getInstance();
     search_query = db.sanitize_input(search_query);
+    search_query = url_decode(search_query);
 
     std::string query = "SELECT questions.question_id, questions.question_title, users.username "
                             "FROM questions "
