@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Problem</title>
-    <!-- Bootstrap CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
@@ -28,8 +28,16 @@
                 <input type="text" class="form-control" id="questionTitle" name="question_title">
             </div>
             <div class="form-group">
-                <label for="questionText">Text:</label>
-                <textarea class="form-control" id="questionText" rows="8" cols="80" name="question_text"></textarea>
+                <label for="questionText">Text (Markdown supported):</label>
+            </div>
+            <div class="form-group">
+                <button id="toggle-button" type="button" class="btn btn-primary mb-3">Toggle Preview</button>
+                <div id="editor-container">
+                    <textarea id="markdown-input" class="form-control" rows="10" placeholder="Write your Markdown here..."></textarea>
+                </div>
+                <div id="preview-container" style="display: none;">
+                    <div id="markdown-preview" class="border p-3"></div>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary">Add problem</button>
         </form>
@@ -39,6 +47,47 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        const textarea = document.getElementById('markdown-input');
+        const preview = document.getElementById('markdown-preview');
+        const editorContainer = document.getElementById('editor-container');
+        const previewContainer = document.getElementById('preview-container');
+        const toggleButton = document.getElementById('toggle-button');
+
+        // Create a new Showdown converter
+        const converter = new showdown.Converter();
+
+        // Function to update the preview when the textarea content changes
+        function updatePreview() {
+            const markdownText = textarea.value;
+            const htmlText = converter.makeHtml(markdownText);
+            preview.innerHTML = htmlText;
+        }
+
+        // Function to toggle between editor and preview mode
+        function toggleMode() {
+            if (editorContainer.style.display === 'none') {
+                editorContainer.style.display = 'block';
+                previewContainer.style.display = 'none';
+                toggleButton.textContent = 'Preview';
+                updatePreview();
+            } else {
+                editorContainer.style.display = 'none';
+                previewContainer.style.display = 'block';
+                toggleButton.textContent = 'Edit';
+            }
+        }
+
+        // Update the preview initially
+        updatePreview();
+
+        // Attach an event listener to the textarea for input changes
+        textarea.addEventListener('input', updatePreview);
+
+        // Attach an event listener to the toggle button
+        toggleButton.addEventListener('click', toggleMode);
+
+
+
         function GetURLParameter(sParam) {
             var sPageURL = window.location.search.substring(1);
             var sURLVariables = sPageURL.split('&');
