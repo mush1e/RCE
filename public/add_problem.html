@@ -22,25 +22,27 @@
     </nav>
 
     <div class="container mt-5">
+
         <form id="addProblemForm">
             <div class="form-group">
                 <label for="questionTitle">Title:</label>
-                <input type="text" class="form-control" id="questionTitle" name="question_title">
+                <input type="text" class="form-control" id="questionTitle" name="question_title" required>
             </div>
             <div class="form-group">
                 <label for="questionText">Text (Markdown supported):</label>
             </div>
             <div class="form-group">
-                <button id="toggle-button" type="button" class="btn btn-primary mb-3">Toggle Preview</button>
+                <button id="toggle-button" type="button" class="btn btn-secondary mb-3">Toggle Preview</button>
                 <div id="editor-container">
-                    <textarea id="markdown-input" class="form-control" rows="10" placeholder="Write your Markdown here..."></textarea>
+                    <textarea id="markdown-input" class="form-control" rows="10" name="question_text" placeholder="Write your Markdown here..." required></textarea>
                 </div>
                 <div id="preview-container" style="display: none;">
                     <div id="markdown-preview" class="border p-3"></div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Add problem</button>
+            <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
         </form>
+        
     </div>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -52,6 +54,8 @@
         const editorContainer = document.getElementById('editor-container');
         const previewContainer = document.getElementById('preview-container');
         const toggleButton = document.getElementById('toggle-button');
+        const addProblemButton = document.getElementById('addProblemButton');
+
 
         // Create a new Showdown converter
         const converter = new showdown.Converter();
@@ -122,6 +126,34 @@
                 }
             }
             authXhr.send();
+            addProblemButton.addEventListener('click', function(event) {
+                // event.preventDefault();
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/add_problem", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                var formData = new FormData(document.getElementById("addProblemForm"));
+
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === XMLHttpRequest.DONE) {
+                        if(xhr.status == 200) {
+                            window.location.href = "/"
+                        } else {
+                            // TODO
+                        }
+                    }
+                }
+
+                var urlEncodedData = "";
+                for (var pair of formData.entries()) {
+                    if (urlEncodedData !== "") {
+                        urlEncodedData += "&";
+                    }
+                    urlEncodedData += encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]);
+                }
+
+                xhr.send(urlEncodedData);
+            });
         });
         
     </script>
