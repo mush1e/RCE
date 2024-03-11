@@ -314,5 +314,8 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
     close(client_socket);
 }
 
+void handle_add_problem(HTTPRequest& req, int client_socket) {
+    
+}
 
 

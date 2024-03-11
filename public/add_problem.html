@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Problem</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <a class="navbar-brand" href="/">RCE</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto" id="navItemList">
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <form id="addProblemForm">
+            <div class="form-group">
+                <label for="questionTitle">Title:</label>
+                <input type="text" class="form-control" id="questionTitle" name="question_title">
+            </div>
+            <div class="form-group">
+                <label for="questionText">Text:</label>
+                <textarea class="form-control" id="questionText" rows="8" cols="80" name="question_text"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add problem</button>
+        </form>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function GetURLParameter(sParam) {
+            var sPageURL = window.location.search.substring(1);
+            var sURLVariables = sPageURL.split('&');
+            for (var i = 0; i < sURLVariables.length; i++) {
+                var sParameterName = sURLVariables[i].split('=');
+                if (sParameterName[0] == sParam) 
+                    return sParameterName[1];
+            }
+        }
+    
+        document.addEventListener("DOMContentLoaded", function() {
+           
+            var authXhr = new XMLHttpRequest();
+            authXhr.open("GET", "/is_auth", true);
+            authXhr.onreadystatechange = function() {
+                if (authXhr.readyState === XMLHttpRequest.DONE) {
+                    if (authXhr.status === 200) {
+                        // User is logged in, show the submit form
+                        var submitFormGroup = document.getElementById("submitFormGroup");
+                        submitFormGroup.style.display = "block";
+                        navItemList.innerHTML += '<li class="nav-item">' +
+                        `<a class="nav-link" href="/logout">logout</a>`
+                        + `</li>`;
+                    }
+                    else {
+                        navItemList.innerHTML += '<li class="nav-item">' +
+                        '<a class="nav-link" href="/login">Login</a></li>' +
+                        '<li class="nav-item">' +
+                        '<a class="nav-link" href="/register">Register</a>'
+                        + '</li>';
+                    }
+                }
+            }
+            authXhr.send();
+        });
+        
+    </script>
+    
+        
+</body>
+</html>
