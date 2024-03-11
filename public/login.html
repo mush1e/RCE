@@ -67,7 +67,7 @@
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (xhr.status === 200) {
-                        alert("User successfully logged in!");
+                        window.location.href = "/";
                     } else if (xhr.status === 401) { 
                         alert("Invalid Credentials! Try again");
                     } else {

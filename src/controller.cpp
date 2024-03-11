@@ -245,11 +245,10 @@ void handle_logout(HTTPRequest& req, int client_socket) {
         session_manager.logout(it->first);
     }
 
-    
-    http_response = "HTTP/1.1 200 OK\r\n";
-    http_response += "Content-Type: text/plain\r\n";
+    http_response = "HTTP/1.1 302 Found\r\n";
+    http_response += "Location: /\r\n"; // Redirect to the root URL
+    http_response += "Content-Length: 0\r\n";
     http_response += "\r\n";
-    http_response += "User has been Logged out.\r\n";
 
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 
