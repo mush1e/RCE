@@ -315,11 +315,30 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
 }
 
 void handle_add_problem(HTTPRequest& req, int client_socket) {
+
     std::string title = get_form_field(req.body, "question_title");
     std::string text = get_form_field(req.body, "question_text");
 
     Database& DB = Database::getInstance();
+    SessionManager& session = SessionManager::get_instance();
+
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                           [](const std::pair<std::string, std::string>& pair) {
+                               return pair.first == "session_id";
+                           });
     
+    if(it != req.cookies.end() && session.isValidSession(it->second)) {
+        std::string userID = session.getUserId(it->second);
+        // std::string username = DB.get_user(userID);
+        std::cout << userID << std::endl;
+    }
+
+    std::string http_response = "HTTP/1.1 200 OK\r\n";
+                http_response += "Content-Type: text/plain\r\n";
+                http_response += "\r\n";
+                http_response += "Session ID is valid.\r\n";
+
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
 
 }
 

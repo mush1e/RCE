@@ -55,3 +55,11 @@ bool SessionManager::logout(const std::string& sessionId) {
 
     return false; // Session ID not found
 }
+
+std::string SessionManager::getUserId(const std::string& sessionID) const {
+    std::string userID {};
+    auto it = sessions.find(sessionID);
+    if (it != sessions.end())
+        userID = it->second.user_id;
+    return userID;
+}

@@ -27,8 +27,9 @@ public:
     bool username_exists(const std::string& username);
     bool login(const std::string& username, const std::string& password);
     bool insert_user(const std::string& username, const std::string& password, bool is_admin);
-    // bool search_problem(std::string& query);
+    bool insert_problem();
 
+    std::string get_user(const std::string& userID);
 };
 
 std::string generate_salt();

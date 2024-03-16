@@ -27,6 +27,7 @@ class SessionManager {
         std::string createSession(const std::string& userId); 
         std::string generateSessionId();
         bool logout(const std::string& sessionId);
+        std::string getUserId(const std::string& sessionID) const;
 };
 
 #endif

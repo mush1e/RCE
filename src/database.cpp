@@ -235,10 +235,19 @@ void Database::add_leetcode_problems() {
     }
 }
 
-// bool Database::search_problem(std::string& search_params) {
-//     search_params = sanitize_input(search_params);
-//     std::string query = "SELECT question_title FROM questions WHERE question_title LIKE '%"
-//                         + search_params + "%'";
+std::string Database::get_user(const std::string& userID) {
+    std::string username;
+    std::string sanitized_id = sanitize_input(userID);
     
+    std::string query = "SELECT username FROM users WHERE user_id = '" + sanitized_id + "'";
 
-// }
+    sqlite3_stmt* stmt {};
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) 
+        username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    else 
+        std::cerr << "No user found with the specified ID" << std::endl;
+    
+    sqlite3_finalize(stmt); 
+    return username;
+}
