@@ -57,9 +57,10 @@ bool SessionManager::logout(const std::string& sessionId) {
 }
 
 std::string SessionManager::getUserId(const std::string& sessionID) const {
-    std::string userID {};
-    auto it = sessions.find(sessionID);
-    if (it != sessions.end())
-        userID = it->second.user_id;
-    return userID;
+    for (auto session : sessions) {
+        if (session.first.compare(sessionID))
+            return session.second.user_id;
+    }
+   
+    return "";
 }

@@ -328,9 +328,8 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
                            });
     
     if(it != req.cookies.end() && session.isValidSession(it->second)) {
-        std::string userID = session.getUserId(it->second);
-        // std::string username = DB.get_user(userID);
-        std::cout << userID << std::endl;
+        std::string username = session.getUserId(it->second);
+        std::cout << username << std::endl;
     }
 
     std::string http_response = "HTTP/1.1 200 OK\r\n";
