@@ -315,7 +315,12 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
 }
 
 void handle_add_problem(HTTPRequest& req, int client_socket) {
-    // TODO
+    std::string title = get_form_field(req.body, "question_title");
+    std::string text = get_form_field(req.body, "question_text");
+
+    Database& DB = Database::getInstance();
+    
+
 }
 
 

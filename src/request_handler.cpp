@@ -103,9 +103,8 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if (req.URI == "/run") {}
             // handle_run(req, client_socket);
 
-        else if (req.URI == "/add_problem") {
-            // TODO
-        }
+        else if (req.URI == "/add_problem") 
+            handle_add_problem(req, client_socket);
 
          else
             sendNotFoundResponse(client_socket);
