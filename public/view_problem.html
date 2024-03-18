@@ -50,11 +50,11 @@
             var sURLVariables = sPageURL.split('&');
             for (var i = 0; i < sURLVariables.length; i++) {
                 var sParameterName = sURLVariables[i].split('=');
-                if (sParameterName[0] == sParam) 
+                if (sParameterName[0] == sParam)
                     return sParameterName[1];
             }
         }
-    
+
         document.addEventListener("DOMContentLoaded", function() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/get_problem?id=" + GetURLParameter('id'), true)
@@ -67,7 +67,7 @@
                         var problemStatement = document.getElementById("problemStatement");
                         problemTitle.innerHTML = problem.title;
                         problemStatement.innerHTML = problem.text;
-    
+
                         var navItemList = document.getElementById("navItemList"); // Moved here
 
                         var authXhr = new XMLHttpRequest();
@@ -79,8 +79,11 @@
                                     var submitFormGroup = document.getElementById("submitFormGroup");
                                     submitFormGroup.style.display = "block";
                                     navItemList.innerHTML += '<li class="nav-item">' +
-                                    `<a class="nav-link" href="/logout">logout</a>`
-                                    + `</li>`;
+                                                                `<a class="nav-link" href="/add_problem">Add Problem</a>` +
+                                                              `</li>` +
+                                                              '<li class="nav-item">' +
+                                                                `<a class="nav-link" href="/logout">logout</a>` +
+                                                              `</li>`;
                                 }
                                 else {
                                     navItemList.innerHTML += '<li class="nav-item">' +
@@ -92,14 +95,14 @@
                             }
                         }
                         authXhr.send();
-                    } else 
-                        console.error('Error fetching problems data:', xhr.statusText);       
+                    } else
+                        console.error('Error fetching problems data:', xhr.statusText);
                 }
             }
             xhr.send();
         });
     </script>
-    
-        
+
+
 </body>
 </html>

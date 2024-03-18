@@ -41,8 +41,8 @@
                 </div>
             </div>
             <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
+            <a href="/" class="btn btn-danger" id="redirectButton">Back</a>
         </form>
-        
     </div>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -89,9 +89,9 @@
 
         // Attach an event listener to the toggle button
         toggleButton.addEventListener('click', toggleMode);
-    
+
         document.addEventListener("DOMContentLoaded", function() {
-           
+
             var authXhr = new XMLHttpRequest();
             authXhr.open("GET", "/is_auth", true);
             authXhr.onreadystatechange = function() {
@@ -126,11 +126,12 @@
 
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === XMLHttpRequest.DONE) {
-                        if(xhr.status == 200) {
+                        if(xhr.status == 200)
                             window.location.href = "/"
-                        } else {
-                            // TODO
-                        }
+
+                        else if(xhr.status == 400)
+                            alert("Problem with title already exists! Please try again")
+
                     }
                 }
 
@@ -145,9 +146,9 @@
                 xhr.send(urlEncodedData);
             });
         });
-        
+
     </script>
-    
-        
+
+
 </body>
 </html>

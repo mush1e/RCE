@@ -31,7 +31,7 @@
             <div class="input-group-append">
                 <button class="btn btn-outline-primary" type="button" id="searchButton">Search</button>
             </div>
-            
+
         </div>
         <table id="problemsTable" class="table mt-3">
             <thead>
@@ -80,10 +80,13 @@
                     authXhr.onreadystatechange = function() {
                         if (authXhr.readyState === XMLHttpRequest.DONE) {
                             if (authXhr.status === 200) {
-                                // User is logged in, show the submit form
                                 navItemList.innerHTML += '<li class="nav-item">' +
-                                    `<a class="nav-link" href="/logout">logout</a>`
-                                    + `</li>`;
+                                                            `<a class="nav-link" href="/add_problem">Add Problem</a>` +
+                                                          `</li>` +
+                                                          '<li class="nav-item">' +
+                                                            `<a class="nav-link" href="/logout">logout</a>` +
+                                                          `</li>`;
+
                             } else {
                                 navItemList.innerHTML += '<li class="nav-item">' +
                                     '<a class="nav-link" href="/login">Login</a></li>' +
