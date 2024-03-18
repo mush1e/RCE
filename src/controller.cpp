@@ -158,7 +158,7 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
 
 void handle_view_problem(HTTPRequest &req, int client_socket, int problem_id) {
     Database& db = Database::getInstance();
-    
+
     // Construct the SQL query with proper syntax
     std::string query = "SELECT questions.question_title, questions.question_text, users.username "
                         "FROM questions "
@@ -230,7 +230,7 @@ void handle_is_auth(HTTPRequest& req, int client_socket) {
 
 // TODO
 void handle_submission(HTTPRequest& req, int client_socket) {
-    
+
 }
 
 void handle_logout(HTTPRequest& req, int client_socket) {
@@ -240,7 +240,7 @@ void handle_logout(HTTPRequest& req, int client_socket) {
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
                            });
-                           
+
     if (it != req.cookies.end()) {
         session_manager.logout(it->first);
     }
@@ -265,7 +265,7 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
                             "INNER JOIN users ON questions.admin_id = users.user_id "
                             "WHERE LOWER(questions.question_title) LIKE LOWER('%" + search_query + "%')";
 
-    
+
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(db.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
         std::cerr << "Error preparing SQL statement" << std::endl;
@@ -326,22 +326,63 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
                            });
-    
+
     if(it != req.cookies.end() && session.isValidSession(it->second)) {
+        int count {};
         std::string username = session.getUserId(it->second);
         std::string user_id = DB.get_user(username);
-        std::cout << user_id << std::endl;
-    } else {
-        // send bad message
-    }
 
-    std::string http_response = "HTTP/1.1 200 OK\r\n";
+        sqlite3_stmt* stmt;
+        std::string query = "SELECT COUNT(*) FROM questions WHERE question_title = '" + title + "'";
+
+        if (sqlite3_prepare_v2(DB.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK)
+            std::cerr << "Error preparing SQL statement" << std::endl;
+
+        if (sqlite3_step(stmt) == SQLITE_ROW)
+            count = sqlite3_column_int(stmt, 0);
+
+        sqlite3_finalize(stmt);
+
+        if (count > 0) {
+
+            std::cerr << "Problem already exists" << std::endl;
+
+            std::string http_response = "HTTP/1.1 400 Bad Request\r\n";
+            http_response += "Content-Type: text/plain\r\n";
+            http_response += "\r\n";
+            http_response += "Problem with title '" + title + "' already exists.\r\n";
+            send(client_socket, http_response.c_str(), http_response.length(), 0);
+
+
+        } else {
+            query = "INSERT INTO questions (question_title, question_text, date_posted, admin_id) VALUES ('"
+                                + title + "', '"
+                                + text + "', "
+                                + "CURRENT_DATE, " + user_id
+                                + ")";
+            if (!DB.execute_query(query.c_str())) {
+                std::cerr << "Failed to add problem: " << title << std::endl;
+
+                std::string http_response = "HTTP/1.1 500 Internal Server Error\r\n";
                 http_response += "Content-Type: text/plain\r\n";
                 http_response += "\r\n";
-                http_response += "Session ID is valid.\r\n";
+                http_response += "Failed to add problem: " + title + "\r\n";
+                send(client_socket, http_response.c_str(), http_response.length(), 0);
 
-    send(client_socket, http_response.c_str(), http_response.length(), 0);
+            } else {
+                std::string http_response = "HTTP/1.1 200 OK\r\n";
+                            http_response += "Content-Type: text/plain\r\n";
+                            http_response += "\r\n";
+                            http_response += "Question has been added.\r\n";
 
+                send(client_socket, http_response.c_str(), http_response.length(), 0);
+            }
+        }
+    } else {
+        std::string http_response = "HTTP/1.1 400 Bad Request\r\n";
+        http_response += "Content-Type: text/plain\r\n";
+        http_response += "\r\n";
+        http_response += "Invalid session.\r\n";
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
+    }
 }
-
-
