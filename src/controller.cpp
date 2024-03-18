@@ -386,3 +386,20 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
         send(client_socket, http_response.c_str(), http_response.length(), 0);
     }
 }
+
+
+void handle_is_author(HTTPRequest& req, int client_socket) {
+    bool is_authenticated {};
+    std::string username {};
+
+    SessionManager& session = SessionManager::get_instance();
+    
+     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                           [](const std::pair<std::string, std::string>& pair) {
+                               return pair.first == "session_id";
+                           });
+    
+    is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
+    username = session.getUserId(it->second);
+    // TODO handle is author to handle delete button
+}
