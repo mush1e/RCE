@@ -29,7 +29,7 @@ public:
     bool insert_user(const std::string& username, const std::string& password, bool is_admin);
     bool insert_problem();
 
-    std::string get_user(const std::string& userID);
+    std::string get_user(const std::string& username);
 };
 
 std::string generate_salt();

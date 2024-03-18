@@ -329,7 +329,10 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
     
     if(it != req.cookies.end() && session.isValidSession(it->second)) {
         std::string username = session.getUserId(it->second);
-        std::cout << username << std::endl;
+        std::string user_id = DB.get_user(username);
+        std::cout << user_id << std::endl;
+    } else {
+        // send bad message
     }
 
     std::string http_response = "HTTP/1.1 200 OK\r\n";

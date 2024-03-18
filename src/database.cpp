@@ -235,19 +235,35 @@ void Database::add_leetcode_problems() {
     }
 }
 
-std::string Database::get_user(const std::string& userID) {
-    std::string username;
-    std::string sanitized_id = sanitize_input(userID);
-    
-    std::string query = "SELECT username FROM users WHERE user_id = '" + sanitized_id + "'";
+std::string Database::get_user(const std::string& username) {
+    std::string user_id;
+    std::string sanitized_username = sanitize_input(username);
 
-    sqlite3_stmt* stmt {};
+    std::string query = "SELECT user_id FROM users WHERE username = ?";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+        return user_id; // Return empty string on error
+    }
 
-    if (sqlite3_step(stmt) == SQLITE_ROW) 
-        username = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-    else 
+    // Bind parameter
+    sqlite3_bind_text(stmt, 1, sanitized_username.c_str(), -1, SQLITE_STATIC);
+
+    // Execute SQL statement
+    int result = sqlite3_step(stmt);
+    if (result == SQLITE_ROW) {
+        // Retrieve user_id
+        user_id = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+    } else if (result != SQLITE_DONE) {
+        // Error occurred during execution
+        std::cerr << "SQL error: " << sqlite3_errmsg(db) << std::endl;
+    } else {
+        // No user found
         std::cerr << "No user found with the specified ID" << std::endl;
+    }
+
+    // Finalize the statement
+    sqlite3_finalize(stmt);
     
-    sqlite3_finalize(stmt); 
-    return username;
+    return user_id;
 }
