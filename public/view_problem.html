@@ -38,9 +38,13 @@
                     <br/>
                     <br/>
                     <label for="adminActions">Admin Actions:</label>
-                    <button type="submit" class="btn btn-danger" id="deleteProblem" style="display: none;">Delete</button>
-                </div>   
-                
+                    <div id="adminPanel" style="display: none;">
+                        <a href="/delete" id="deleteButton" class="btn btn-warning" >Delete</a>
+                        <a href="/update" id="updateButton" class="btn btn-info">Update</a>
+                    </div>
+
+                </div>
+
                 <a href="/" class="btn btn-outline-danger" id="redirectButton">Back</a>
             </div>
         </div>
@@ -59,6 +63,11 @@
                     return sParameterName[1];
             }
         }
+        var deleteButton = document.getElementById("deleteButton");
+        deleteButton.href = "/delete?id=" + GetURLParameter("id");
+
+        var updateButton = document.getElementById("updateButton");
+        updateButton.href = "/update?id=" + GetURLParameter("id");
 
         document.addEventListener("DOMContentLoaded", function() {
             var xhr = new XMLHttpRequest();
@@ -106,8 +115,8 @@
                         authorXhr.onreadystatechange = function() {
                             if (authorXhr.readyState === XMLHttpRequest.DONE) {
                                 if (authorXhr.status === 200) {
-                                    var deleteGroup = document.getElementById("deleteProblem");
-                                    deleteGroup.style.display = "block";
+                                    var adminPanel = document.getElementById("adminPanel");
+                                    adminPanel.style.display = "block";
                                 }
                             }
                         };
