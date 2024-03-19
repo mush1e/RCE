@@ -399,7 +399,7 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
                            });
-    
+
     is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
     if (is_authenticated) {
         username = session.getUserId(it->second);
@@ -432,7 +432,12 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
 
             send(client_socket, http_response.c_str(), http_response.length(), 0);
         }
-
     }
-    
+}
+
+void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) {
+    Database& DB = Database::getInstance();
+    SessionManager& session = SessionManager::get_instance();
+
+
 }

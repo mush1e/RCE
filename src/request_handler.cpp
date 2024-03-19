@@ -46,7 +46,7 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if (req.URI == "/register")
             serveStaticFile("./public/register.html", client_socket);
-        
+
         else if (req.URI == "/add_problem")
             serveStaticFile("./public/add_problem.html", client_socket);
 
@@ -55,7 +55,7 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if(req.URI == "/is_auth")
             handle_is_auth(req, client_socket);
-        
+
         else if (req.URI == "/is_author")
             handle_is_author(req, client_socket, 1);
 
@@ -73,6 +73,12 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
                 handle_view_problem(req, client_socket, std::atoi(params["id"].c_str()));
             else
                 sendNotFoundResponse(client_socket);
+        }
+
+        else if (req.URI.find("/delete") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end())
+                handle_delete_problem(req, client_socket, std::atoi(params["id"].c_str()));
         }
 
         else if(req.URI == "/logout") {
@@ -97,19 +103,19 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if (req.URI == "/login")
             handle_authentication(req, client_socket);
-        
-        //TODO 
-        else if (req.URI == "/submit") 
+
+        //TODO
+        else if (req.URI == "/submit")
             handle_authentication(req, client_socket);
 
         //TODO
         else if (req.URI == "/run") {}
             // handle_run(req, client_socket);
 
-        else if (req.URI == "/add_problem") 
+        else if (req.URI == "/add_problem")
             handle_add_problem(req, client_socket);
 
-         else
+        else
             sendNotFoundResponse(client_socket);
 
     else

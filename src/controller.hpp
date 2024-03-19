@@ -20,6 +20,8 @@ void handle_run(HTTPRequest& req, int client_socket);
 void handle_logout(HTTPRequest& req, int client_socket);
 void handle_search(HTTPRequest& req, int client_socket, std::string query);
 void handle_add_problem(HTTPRequest& req, int client_socket);
+void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id);
+
 
 
 #endif
