@@ -388,18 +388,51 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
 }
 
 
-void handle_is_author(HTTPRequest& req, int client_socket) {
+void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
     bool is_authenticated {};
     std::string username {};
 
     SessionManager& session = SessionManager::get_instance();
-    
+    Database& DB = Database::getInstance();
+
      auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
                            });
     
     is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
-    username = session.getUserId(it->second);
-    // TODO handle is author to handle delete button
+    if (is_authenticated) {
+        username = session.getUserId(it->second);
+
+        std::string query = "SELECT users.username "
+                            "FROM questions "
+                            "INNER JOIN users ON questions.admin_id = users.user_id "
+                            "WHERE questions.question_id = " + std::to_string(problem_id);
+
+         sqlite3_stmt* stmt;
+
+        if (sqlite3_prepare_v2(DB.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+            std::cerr << "Error preparing SQL statement" << std::endl;
+            return;
+        }
+
+        if (sqlite3_step(stmt) != SQLITE_ROW) {
+            std::cerr << "No rows returned" << std::endl;
+            sqlite3_finalize(stmt);
+            return;
+        }
+
+        std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+
+        if(username.compare(author) == 0) {
+            std::string http_response = "HTTP/1.1 200 OK\r\n";
+                http_response += "Content-Type: text/plain\r\n";
+                http_response += "\r\n";
+                http_response += "Author has been validated.\r\n";
+
+            send(client_socket, http_response.c_str(), http_response.length(), 0);
+        }
+
+    }
+    
 }

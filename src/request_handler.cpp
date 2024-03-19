@@ -57,7 +57,7 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
             handle_is_auth(req, client_socket);
         
         else if (req.URI == "/is_author")
-            handle_is_author(req, client_socket);
+            handle_is_author(req, client_socket, 1);
 
         else if (req.URI.find("/view_problem") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
