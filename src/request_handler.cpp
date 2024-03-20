@@ -3,6 +3,21 @@
 #include "utils.hpp"
 #include <unordered_map>
 
+void HTTPResponse::set_JSON_content(const std::string& json_data) {
+    this->content_type = "application/json";
+    this->body = json_data;
+}
+
+std::string HTTPResponse::generateResponse() const {
+    std::ostringstream response {};
+    response << "HTTP/1.1 " << status_code << " " << status_message << "\r\n";
+    response << "Content-Type: " << content_type << "\r\n";
+    response << "Content-Length: " << body.length() << "\r\n";
+    response << "\r\n";
+    response << body;
+    return response.str();
+}
+
 void serveStaticFile(const std::string& filePath, int client_socket) {
 
     std::ifstream file(filePath);
