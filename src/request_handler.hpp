@@ -26,9 +26,10 @@ struct HTTPResponse {
     std::string status_message {};
     std::string content_type = "text/plain";
     std::string body {};
+    std::string location {};
+    std::pair<std::string, std::string> cookies {};
 
-    // Response Generation Methods
-    std::string generateResponse() const;
+    std::string generate_response() const;
     void set_JSON_content(const std::string& json_data);
 };
 

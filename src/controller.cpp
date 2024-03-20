@@ -58,20 +58,19 @@ void handle_registration(HTTPRequest& req, int client_socket) {
 }
 
 void handle_authentication(HTTPRequest& req, int client_socket){
+    HTTPResponse response {};
+    std::string http_response {};
 
     std::string username = get_form_field(req.body, "username");
     std::string password = get_form_field(req.body, "password");
 
     Database& db = Database::getInstance();
 
-    auto send_bad_request = [](int client_socket) {
-        std::string response = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
-        send(client_socket, response.c_str(), response.length(), 0);
-    };
-
-    auto send_internal_server_error = [](int client_socket) {
-       std::string response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
-        send(client_socket, response.c_str(), response.length(), 0);
+    auto send_bad_request = [&](int client_socket) {
+        response.status_code = 400;
+        response.status_message = "Bad Request";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
     };
 
     if (username.empty() || password.empty()) {
@@ -83,8 +82,10 @@ void handle_authentication(HTTPRequest& req, int client_socket){
     // Check if the username and password match
     if (!db.login(username, password)) {
         // If the credentials don't match, send unauthorized response
-        std::string response = "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\n\r\n";
-        send(client_socket, response.c_str(), response.length(), 0);
+        response.status_code = 401;
+        response.status_message = "Unauthorized";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
         return;
     }
 
@@ -93,13 +94,17 @@ void handle_authentication(HTTPRequest& req, int client_socket){
     std::string sessionId = sessionManager.createSession(username);
 
     // Send successful authentication response with session ID
-    std::string success_response = "HTTP/1.1 200 OK\r\n";
-    success_response += "Set-Cookie: session_id=" + sessionId + "; SameSite=None; Secure; HttpOnly\r\n";
-    success_response += "Content-Length: 0\r\n\r\n";
+    response.status_code = 200;
+    response.status_message = "OK";
+    response.cookies = {"session_id", sessionId};
+
+    std::string success_response = response.generate_response();
     send(client_socket, success_response.c_str(), success_response.length(), 0);
 }
 
 void handle_get_problems(HTTPRequest& req, int client_socket) {
+    HTTPResponse response {};
+
     // Get instance of your Database
     Database& db = Database::getInstance();
 
@@ -118,7 +123,6 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
     std::string json_response = "[";
 
     // Iterate over the results and construct JSON-like string
-
     for (auto stepResult = sqlite3_step(stmt); stepResult == SQLITE_ROW;) {
 
         std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
@@ -133,21 +137,17 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
         json_response += problem_json;
         stepResult = sqlite3_step(stmt);
 
-        // Add comma if not the last row
-        if (stepResult == SQLITE_ROW) {
+        if (stepResult == SQLITE_ROW) 
             json_response += ",";
-        }
-
     }
-
     sqlite3_finalize(stmt);
     json_response += "]";
 
     // Construct HTTP response headers
-    std::string http_response = "HTTP/1.1 200 OK\r\n"
-                                "Content-Type: application/json\r\n"
-                                "Content-Length: " + std::to_string(json_response.length()) + "\r\n"
-                                "\r\n" + json_response;
+    response.status_code = 200;
+    response.status_message = "OK";
+    response.set_JSON_content(json_response);
+    std::string http_response = response.generate_response();
 
     // Send response to the client
     send(client_socket, http_response.c_str(), http_response.length(), 0);
@@ -157,6 +157,7 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
 }
 
 void handle_view_problem(HTTPRequest &req, int client_socket, int problem_id) {
+    HTTPResponse response {};
     Database& db = Database::getInstance();
 
     // Construct the SQL query with proper syntax
@@ -191,10 +192,11 @@ void handle_view_problem(HTTPRequest &req, int client_socket, int problem_id) {
     json_response += "}";
 
     // Build the HTTP response
-    std::string http_response = "HTTP/1.1 200 OK\r\n"
-                                "Content-Type: application/json\r\n"
-                                "Content-Length: " + std::to_string(json_response.length()) + "\r\n"
-                                "\r\n" + json_response;
+    response.status_code = 200;
+    response.status_message = "OK";
+    response.set_JSON_content(json_response);
+
+    std::string http_response = response.generate_response();
 
     // Send the HTTP response
     send(client_socket, http_response.c_str(), http_response.length(), 0);
@@ -205,8 +207,10 @@ void handle_view_problem(HTTPRequest &req, int client_socket, int problem_id) {
 }
 
 void handle_is_auth(HTTPRequest& req, int client_socket) {
-    SessionManager& session = SessionManager::get_instance();
     std::string http_response {};
+    HTTPResponse response {};
+
+    SessionManager& session = SessionManager::get_instance();
 
     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                            [](const std::pair<std::string, std::string>& pair) {
@@ -214,16 +218,16 @@ void handle_is_auth(HTTPRequest& req, int client_socket) {
                            });
 
     if(it != req.cookies.end() && session.isValidSession(it->second)){
-        http_response = "HTTP/1.1 200 OK\r\n";
-        http_response += "Content-Type: text/plain\r\n";
-        http_response += "\r\n";
-        http_response += "Session ID is valid.\r\n";
+        response.status_code = 200;
+        response.status_message = "OK";
+        response.body = "Session ID is valid";
+        http_response = response.generate_response();
     }
     else {
-        http_response = "HTTP/1.1 403 Forbidden\r\n";
-        http_response += "Content-Type: text/plain\r\n";
-        http_response += "\r\n";
-        http_response += "Forbidden: Invalid session ID.\r\n";
+        response.status_code = 403;
+        response.status_message = "Forbidden";
+        response.body = "Forbidden: Invalid session ID.";
+        http_response = response.generate_response();
     }
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
@@ -235,7 +239,10 @@ void handle_submission(HTTPRequest& req, int client_socket) {
 
 void handle_logout(HTTPRequest& req, int client_socket) {
     std::string http_response {};
+
+    HTTPResponse response {};
     SessionManager& session_manager = SessionManager::get_instance();
+    
     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
@@ -245,10 +252,11 @@ void handle_logout(HTTPRequest& req, int client_socket) {
         session_manager.logout(it->first);
     }
 
-    http_response = "HTTP/1.1 302 Found\r\n";
-    http_response += "Location: /\r\n"; // Redirect to the root URL
-    http_response += "Content-Length: 0\r\n";
-    http_response += "\r\n";
+    response.status_code = 302;
+    response.status_message = "Found";
+    response.location = "/";
+
+    http_response = response.generate_response();
 
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 
@@ -257,6 +265,8 @@ void handle_logout(HTTPRequest& req, int client_socket) {
 void handle_search(HTTPRequest& req, int client_socket, std::string search_query) {
 
     Database& db = Database::getInstance();
+    HTTPResponse response {};
+
     search_query = db.sanitize_input(search_query);
     search_query = url_decode(search_query);
 
@@ -302,10 +312,10 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
     json_response += "]";
 
     // Construct HTTP response headers
-    std::string http_response = "HTTP/1.1 200 OK\r\n"
-                                "Content-Type: application/json\r\n"
-                                "Content-Length: " + std::to_string(json_response.length()) + "\r\n"
-                                "\r\n" + json_response;
+    response.status_code = 200;
+    response.status_message = "OK";
+    response.set_JSON_content(json_response);
+    std::string http_response = response.generate_response();
 
     // Send response to the client
     send(client_socket, http_response.c_str(), http_response.length(), 0);
@@ -348,7 +358,7 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
             response.status_code = 400;
             response.status_message = "Bad Request";
             response.body = "Problem with title '" + title + "' already exists.";
-            http_response = response.generateResponse();
+            http_response = response.generate_response();
         } else {
             query = "INSERT INTO questions (question_title, question_text, date_posted, admin_id) VALUES ('"
                                 + title + "', '"
@@ -361,19 +371,19 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
                 response.status_code = 500;
                 response.status_message = "Internal Server Error";
                 response.body = "Failed to add problem: " + title;
-                http_response = response.generateResponse();
+                http_response = response.generate_response();
             } else {
                 response.status_code = 200;
                 response.status_message = "OK";
                 response.body = "Question has been added!";
-                http_response = response.generateResponse();
+                http_response = response.generate_response();
             }
         }
     } else {
         response.status_code = 400;
         response.status_message = "Bad Request";
         response.body = "Invalid Session";
-        http_response = response.generateResponse();
+        http_response = response.generate_response();
     }
     send(client_socket, http_response.c_str(), http_response.length(), 0);  
 }
@@ -421,7 +431,7 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
             response.status_message = "OK";
             response.body = "Author has been validated.\r\n";
 
-            std::string http_response = response.generateResponse();
+            std::string http_response = response.generate_response();
 
             send(client_socket, http_response.c_str(), http_response.length(), 0);
         }
