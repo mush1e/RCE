@@ -24,7 +24,7 @@ struct HTTPRequest {
 struct HTTPResponse {
     int status_code {};
     std::string status_message {};
-    std::string content_type {};
+    std::string content_type = "text/plain";
     std::string body {};
 
     // Response Generation Methods

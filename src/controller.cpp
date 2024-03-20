@@ -315,10 +315,11 @@ void handle_search(HTTPRequest& req, int client_socket, std::string search_query
 }
 
 void handle_add_problem(HTTPRequest& req, int client_socket) {
-
+    std::string http_response {};
     std::string title = get_form_field(req.body, "question_title");
     std::string text = get_form_field(req.body, "question_text");
 
+    HTTPResponse response {};
     Database& DB = Database::getInstance();
     SessionManager& session = SessionManager::get_instance();
 
@@ -344,53 +345,44 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
         sqlite3_finalize(stmt);
 
         if (count > 0) {
-
-            std::cerr << "Problem already exists" << std::endl;
-
-            std::string http_response = "HTTP/1.1 400 Bad Request\r\n";
-            http_response += "Content-Type: text/plain\r\n";
-            http_response += "\r\n";
-            http_response += "Problem with title '" + title + "' already exists.\r\n";
-            send(client_socket, http_response.c_str(), http_response.length(), 0);
-
-
+            response.status_code = 400;
+            response.status_message = "Bad Request";
+            response.body = "Problem with title '" + title + "' already exists.";
+            http_response = response.generateResponse();
         } else {
             query = "INSERT INTO questions (question_title, question_text, date_posted, admin_id) VALUES ('"
                                 + title + "', '"
                                 + text + "', "
                                 + "CURRENT_DATE, " + user_id
                                 + ")";
+
             if (!DB.execute_query(query.c_str())) {
-                std::cerr << "Failed to add problem: " << title << std::endl;
 
-                std::string http_response = "HTTP/1.1 500 Internal Server Error\r\n";
-                http_response += "Content-Type: text/plain\r\n";
-                http_response += "\r\n";
-                http_response += "Failed to add problem: " + title + "\r\n";
-                send(client_socket, http_response.c_str(), http_response.length(), 0);
-
+                response.status_code = 500;
+                response.status_message = "Internal Server Error";
+                response.body = "Failed to add problem: " + title;
+                http_response = response.generateResponse();
             } else {
-                std::string http_response = "HTTP/1.1 200 OK\r\n";
-                            http_response += "Content-Type: text/plain\r\n";
-                            http_response += "\r\n";
-                            http_response += "Question has been added.\r\n";
-
-                send(client_socket, http_response.c_str(), http_response.length(), 0);
+                response.status_code = 200;
+                response.status_message = "OK";
+                response.body = "Question has been added!";
+                http_response = response.generateResponse();
             }
         }
     } else {
-        std::string http_response = "HTTP/1.1 400 Bad Request\r\n";
-        http_response += "Content-Type: text/plain\r\n";
-        http_response += "\r\n";
-        http_response += "Invalid session.\r\n";
-        send(client_socket, http_response.c_str(), http_response.length(), 0);
+        response.status_code = 400;
+        response.status_message = "Bad Request";
+        response.body = "Invalid Session";
+        http_response = response.generateResponse();
     }
+    send(client_socket, http_response.c_str(), http_response.length(), 0);  
 }
 
 
 void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
     bool is_authenticated {};
     std::string username {};
+    HTTPResponse response {};
 
     SessionManager& session = SessionManager::get_instance();
     Database& DB = Database::getInstance();
@@ -425,10 +417,11 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
         std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
 
         if(username.compare(author) == 0) {
-            std::string http_response = "HTTP/1.1 200 OK\r\n";
-                http_response += "Content-Type: text/plain\r\n";
-                http_response += "\r\n";
-                http_response += "Author has been validated.\r\n";
+            response.status_code = 200;
+            response.status_message = "OK";
+            response.body = "Author has been validated.\r\n";
+
+            std::string http_response = response.generateResponse();
 
             send(client_socket, http_response.c_str(), http_response.length(), 0);
         }
