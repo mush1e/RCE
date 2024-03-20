@@ -2,21 +2,28 @@
 
 void handle_registration(HTTPRequest& req, int client_socket) {
 
+    std::string http_response {};
+    HTTPResponse response {};
+
     std::string username = get_form_field(req.body, "username");
     std::string password = get_form_field(req.body, "password");
     std::string confirm_password = get_form_field(req.body, "confirm_password");
     std::string admin_checkbox = get_form_field(req.body, "admin");
-
+    
     Database& db = Database::getInstance();
 
-    auto send_bad_request = [](int client_socket) {
-        std::string response = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
-        send(client_socket, response.c_str(), response.length(), 0);
+    auto send_bad_request = [&](int client_socket) {
+        response.status_code = 400;
+        response.status_message = "Bad Request";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
     };
 
-    auto send_internal_server_error = [](int client_socket) {
-       std::string response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
-        send(client_socket, response.c_str(), response.length(), 0);
+    auto send_internal_server_error = [&](int client_socket) {
+        response.status_code = 500;
+        response.status_message = "Internal Server Error";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
     };
 
     std::regex passwordRegex("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$");
@@ -40,8 +47,10 @@ void handle_registration(HTTPRequest& req, int client_socket) {
     }
 
     if (db.username_exists(username)) {
-        std::string response = "HTTP/1.1 409 Conflict\r\nContent-Length: 0\r\n\r\n";
-        send(client_socket, response.c_str(), response.length(), 0);
+        response.status_code = 409;
+        response.status_message = "Conflict";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
         return;
     }
 
@@ -53,8 +62,10 @@ void handle_registration(HTTPRequest& req, int client_socket) {
     }
 
     // Successful registration response
-    std::string success_response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-    send(client_socket, success_response.c_str(), success_response.length(), 0);
+    response.status_code = 200;
+    response.status_message = "OK";
+    http_response = response.generate_response();
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
 
 void handle_authentication(HTTPRequest& req, int client_socket){
@@ -438,9 +449,9 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
     }
 }
 
-void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) {
-    Database& DB = Database::getInstance();
-    SessionManager& session = SessionManager::get_instance();
+// void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) {
+//     Database& DB = Database::getInstance();
+//     SessionManager& session = SessionManager::get_instance();
 
 
-}
+// }
