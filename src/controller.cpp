@@ -449,9 +449,5 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
     }
 }
 
-// void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) {
-//     Database& DB = Database::getInstance();
-//     SessionManager& session = SessionManager::get_instance();
-
-
-// }
+void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) {
+}

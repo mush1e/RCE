@@ -111,7 +111,7 @@
                         authXhr.send();
 
                         var authorXhr = new XMLHttpRequest();
-                        authorXhr.open("GET", "/is_author", true);
+                        authorXhr.open("GET", "/is_author?id=" + GetURLParameter('id'), true);
                         authorXhr.onreadystatechange = function() {
                             if (authorXhr.readyState === XMLHttpRequest.DONE) {
                                 if (authorXhr.status === 200) {

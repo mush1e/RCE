@@ -18,7 +18,7 @@ std::string HTTPResponse::generate_response() const {
 
     if (!this->cookies.first.empty() && !this->cookies.first.empty())
         response << "Set-Cookie: " << cookies.first << "=" << cookies.second << "; SameSite=None; Secure; HttpOnly\r\n";
-        
+
     response << "Content-Length: " << body.length() << "\r\n";
     response << "\r\n";
     response << body;
@@ -79,8 +79,15 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if(req.URI == "/is_auth")
             handle_is_auth(req, client_socket);
 
-        else if (req.URI == "/is_author")
-            handle_is_author(req, client_socket, 1);
+        else if (req.URI.find("/is_author") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end()) {
+                handle_is_author(req, client_socket, std::atoi(params["id"].c_str()));
+            }
+            else 
+                sendNotFoundResponse(client_socket);
+
+        }
 
         else if (req.URI.find("/view_problem") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
