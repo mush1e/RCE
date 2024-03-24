@@ -417,7 +417,7 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
     SessionManager& session = SessionManager::get_instance();
     Database& DB = Database::getInstance();
 
-     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
                            });
@@ -459,4 +459,56 @@ void handle_is_author(HTTPRequest& req, int client_socket, int problem_id) {
 }
 
 void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) {
+    int count {};
+
+    HTTPResponse response {};
+    std::string http_response {};
+
+    Database& DB = Database::getInstance();
+    SessionManager& session = SessionManager::get_instance();
+
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                            [](const std::pair<std::string, std::string>& pair) {
+                                return pair.first == "session_id";
+                         });
+
+    bool is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
+    
+    if (!is_authenticated)
+        return;
+    
+    std::string query = "SELECT * FROM questions WHERE question_id = " + std::to_string(problem_id);
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(DB.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK)
+        std::cerr << "Error preparing SQL statement" << std::endl;
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+        count = sqlite3_column_int(stmt, 0);
+
+    if (count == 0) {
+        response.status_code = 400;
+        response.status_message = "Bad Request";
+        http_response = response.generate_response();
+    } else {
+        query = "DELETE FROM questions WHERE question_id = " + std::to_string(problem_id);
+        if (sqlite3_prepare_v2(DB.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+            response.status_code = 500;
+            response.status_message = "Internal Server Error";
+            http_response = response.generate_response();
+        } else {
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                response.status_code = 500;
+                response.status_message = "Internal Server Error: Failed to delete the question";
+                http_response = response.generate_response();
+            } else {
+                sqlite3_finalize(stmt);
+                response.status_code = 302;
+                response.status_message = "Question Deleted";
+                response.location = "/";
+                http_response = response.generate_response();
+            }
+        }
+    }
+    send(client_socket, http_response.c_str(), http_response.length(), 0);  
 }
