@@ -340,6 +340,9 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
     std::string title = get_form_field(req.body, "question_title");
     std::string text = get_form_field(req.body, "question_text");
 
+    title = escape_string(title);
+    text = escape_string(text);
+
     HTTPResponse response {};
     Database& DB = Database::getInstance();
     SessionManager& session = SessionManager::get_instance();
@@ -371,23 +374,29 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
             response.body = "Problem with title '" + title + "' already exists.";
             http_response = response.generate_response();
         } else {
-            query = "INSERT INTO questions (question_title, question_text, date_posted, admin_id) VALUES ('"
-                                + title + "', '"
-                                + text + "', "
-                                + "CURRENT_DATE, " + user_id
-                                + ")";
+            query = "INSERT INTO questions (question_title, question_text, date_posted, admin_id) VALUES (?, ?, CURRENT_DATE, ?)";
 
-            if (!DB.execute_query(query.c_str())) {
-
-                response.status_code = 500;
-                response.status_message = "Internal Server Error";
-                response.body = "Failed to add problem: " + title;
-                http_response = response.generate_response();
+            sqlite3_stmt* insertStmt;
+            if (sqlite3_prepare_v2(DB.getDBHandle(), query.c_str(), -1, &insertStmt, NULL) != SQLITE_OK) {
+                std::cerr << "Error preparing SQL statement" << std::endl;
             } else {
-                response.status_code = 200;
-                response.status_message = "OK";
-                response.body = "Question has been added!";
-                http_response = response.generate_response();
+                sqlite3_bind_text(insertStmt, 1, title.c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(insertStmt, 2, text.c_str(), -1, SQLITE_STATIC);
+                sqlite3_bind_text(insertStmt, 3, user_id.c_str(), -1, SQLITE_STATIC);
+
+                int result = sqlite3_step(insertStmt);
+                if (result != SQLITE_DONE) {
+                    response.status_code = 500;
+                    response.status_message = "Internal Server Error";
+                    response.body = "Failed to add problem: " + title;
+                    http_response = response.generate_response();
+                } else {
+                    response.status_code = 200;
+                    response.status_message = "OK";
+                    response.body = "Question has been added!";
+                    http_response = response.generate_response();
+                }
+                sqlite3_finalize(insertStmt);
             }
         }
     } else {

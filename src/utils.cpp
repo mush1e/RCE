@@ -49,3 +49,17 @@ std::string url_decode(const std::string& str) {
     }
     return decoded.str();
 }
+
+std::string escape_string(const std::string& input) {
+    std::string output;
+    for (char c : input) {
+        if (c == '\'') {
+            output += '\'';
+        } else if (c == '\n') {
+            output += "\\n";
+        } else {
+            output += c;
+        }
+    }
+    return output;
+}
