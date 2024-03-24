@@ -512,3 +512,23 @@ void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) 
     }
     send(client_socket, http_response.c_str(), http_response.length(), 0);  
 }
+
+void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) {
+    int count {};
+
+    HTTPResponse response {};
+    std::string http_response {};
+
+    Database& DB = Database::getInstance();
+    SessionManager& session = SessionManager::get_instance();
+
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                            [](const std::pair<std::string, std::string>& pair) {
+                                return pair.first == "session_id";
+                         });
+
+    bool is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
+    
+    if (!is_authenticated)
+        return;
+}

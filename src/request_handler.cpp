@@ -111,6 +111,11 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
                 handle_delete_problem(req, client_socket, std::atoi(params["id"].c_str()));
         }
 
+        else if (req.URI.find("/update") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end())
+                handle_update_problem(req, client_socket, std::atoi(params["id"].c_str()));
+        }
         else if(req.URI == "/logout") {
             handle_logout(req, client_socket);
         }

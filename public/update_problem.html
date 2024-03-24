@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Problem</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <a class="navbar-brand" href="/">RCE</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto" id="navItemList">
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+
+        <form id="addProblemForm">
+            <div class="form-group">
+                <label for="questionTitle">Title:</label>
+                <input type="text" class="form-control" id="questionTitle" name="question_title" required>
+            </div>
+            <div class="form-group">
+                <label for="questionText">Text (Markdown supported):</label>
+            </div>
+            <div class="form-group">
+                <button id="toggle-button" type="button" class="btn btn-secondary mb-3">Toggle Preview</button>
+                <div id="editor-container">
+                    <textarea id="markdown-input" class="form-control" rows="10" name="question_text" placeholder="Write your Markdown here..." required></textarea>
+                </div>
+                <div id="preview-container" style="display: none;">
+                    <div id="markdown-preview" class="border p-3"></div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
+            <a href="/" class="btn btn-danger" id="redirectButton">Back</a>
+        </form>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const textarea = document.getElementById('markdown-input');
+        const preview = document.getElementById('markdown-preview');
+        const editorContainer = document.getElementById('editor-container');
+        const previewContainer = document.getElementById('preview-container');
+        const toggleButton = document.getElementById('toggle-button');
+        const addProblemButton = document.getElementById('addProblemButton');
+
+
+        // Create a new Showdown converter
+        const converter = new showdown.Converter();
+
+        // Function to update the preview when the textarea content changes
+        function updatePreview() {
+            const markdownText = textarea.value;
+            const htmlText = converter.makeHtml(markdownText);
+            preview.innerHTML = htmlText;
+        }
+
+        // Function to toggle between editor and preview mode
+        function toggleMode() {
+            if (editorContainer.style.display === 'none') {
+                editorContainer.style.display = 'block';
+                previewContainer.style.display = 'none';
+                toggleButton.textContent = 'Preview';
+                updatePreview();
+            } else {
+                editorContainer.style.display = 'none';
+                previewContainer.style.display = 'block';
+                toggleButton.textContent = 'Edit';
+            }
+        }
+
+        // Update the preview initially
+        updatePreview();
+
+        // Attach an event listener to the textarea for input changes
+        textarea.addEventListener('input', updatePreview);
+
+        // Attach an event listener to the toggle button
+        toggleButton.addEventListener('click', toggleMode);
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            var authXhr = new XMLHttpRequest();
+            authXhr.open("GET", "/is_auth", true);
+            authXhr.onreadystatechange = function() {
+                if (authXhr.readyState === XMLHttpRequest.DONE) {
+                    if (authXhr.status === 200) {
+                        // User is logged in, show the submit form
+                        var submitFormGroup = document.getElementById("submitFormGroup");
+                        submitFormGroup.style.display = "block";
+                        navItemList.innerHTML += '<li class="nav-item">' +
+                        `<a class="nav-link" href="/logout">logout</a>`
+                        + `</li>`;
+                    }
+                    else {
+                        navItemList.innerHTML += '<li class="nav-item">' +
+                        '<a class="nav-link" href="/login">Login</a></li>' +
+                        '<li class="nav-item">' +
+                        '<a class="nav-link" href="/register">Register</a>'
+                        + '</li>';
+                        alert("You need to be logged in to access this page.");
+                        window.location.href = "/login";
+                    }
+                }
+            }
+            authXhr.send();
+            addProblemButton.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/add_problem", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                var formData = new FormData(document.getElementById("addProblemForm"));
+
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState === XMLHttpRequest.DONE) {
+                        if(xhr.status == 200)
+                            window.location.href = "/"
+
+                        else if(xhr.status == 400)
+                            alert("Problem with title already exists! Please try again")
+
+                    }
+                }
+
+                var urlEncodedData = "";
+                for (var pair of formData.entries()) {
+                    if (urlEncodedData !== "") {
+                        urlEncodedData += "&";
+                    }
+                    urlEncodedData += encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]);
+                }
+
+                xhr.send(urlEncodedData);
+            });
+        });
+
+    </script>
+
+
+</body>
+</html>
