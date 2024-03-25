@@ -116,6 +116,7 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
             if (params.find("id") != params.end())
                 serveStaticFile("./public/update_problem.html", client_socket);
         }
+
         else if(req.URI == "/logout") {
             handle_logout(req, client_socket);
         }
@@ -149,6 +150,12 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if (req.URI == "/add_problem")
             handle_add_problem(req, client_socket);
+
+        else if (req.URI.find("/update") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end())
+                handle_update_problem(req, client_socket, std::stoi(params["id"]));
+        }
 
         else
             sendNotFoundResponse(client_socket);

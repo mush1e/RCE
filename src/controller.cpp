@@ -564,4 +564,48 @@ void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) 
 
     bool is_valid = is_author(req, problem_id);
 
+    Database& DB = Database::getInstance();
+
+    std::string title = get_form_field(req.body, "question_title");
+    std::string text = get_form_field(req.body, "question_text");
+
+    title = escape_string(title);
+    text = escape_string(text);
+    
+    if (!is_valid) {
+        response.status_code = 403;
+        response.status_message = "Forbidden";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(),http_response.length() , 0);
+        return;
+    }
+
+    std::string update_query = "UPDATE questions SET question_title = ?, question_text = ? WHERE question_id = ?";
+    sqlite3_stmt* stmt {};
+
+    int prepare_result = sqlite3_prepare_v2(DB.getDBHandle(), update_query.c_str(), -1, &stmt, nullptr);
+    if (prepare_result != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, title.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, text.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3, problem_id);
+    
+    int step_result = sqlite3_step(stmt);
+
+    if (step_result == SQLITE_DONE) {
+        response.status_code = 200;
+        response.status_message = "OK";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(),http_response.length() , 0);
+    }
+    else {
+        response.status_code = 500;
+        response.status_message = "Internal Server Error";
+        http_response = response.generate_response();
+        send(client_socket, http_response.c_str(),http_response.length() , 0);
+    }
+    sqlite3_finalize(stmt);
 }

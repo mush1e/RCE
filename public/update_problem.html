@@ -40,7 +40,7 @@
                     <div id="markdown-preview" class="border p-3"></div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
+            <button type="submit" class="btn btn-primary" id="updateProblemButton">Add problem</button>
             <a href="/" class="btn btn-danger" id="redirectButton">Back</a>
         </form>
     </div>
@@ -54,7 +54,7 @@
         const editorContainer = document.getElementById('editor-container');
         const previewContainer = document.getElementById('preview-container');
         const toggleButton = document.getElementById('toggle-button');
-        const addProblemButton = document.getElementById('addProblemButton');
+        const updateProblemButton = document.getElementById('updateProblemButton');
 
         function GetURLParameter(sParam) {
             var sPageURL = window.location.search.substring(1);
@@ -139,11 +139,11 @@
                 }
             }
             authXhr.send();
-            addProblemButton.addEventListener('click', function(event) {
+            updateProblemButton.addEventListener('click', function(event) {
                 event.preventDefault();
 
                 var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/add_problem", true);
+                xhr.open("POST", "/update_problem?id=" + GetURLParameter("id"), true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 var formData = new FormData(document.getElementById("addProblemForm"));
 
