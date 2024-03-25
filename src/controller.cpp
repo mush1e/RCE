@@ -1,5 +1,49 @@
 #include "controller.hpp"
 
+bool is_author(HTTPRequest& req, int problem_id) {
+    bool is_authenticated {};
+    std::string username {};
+    SessionManager& session = SessionManager::get_instance();
+    Database& DB = Database::getInstance();
+
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                           [](const std::pair<std::string, std::string>& pair) {
+                               return pair.first == "session_id";
+                           });
+
+    is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
+    
+    if(!is_authenticated)
+        return false;
+
+    username = session.getUserId(it->second);
+
+    std::string query = "SELECT users.username "
+                        "FROM questions "
+                        "INNER JOIN users ON questions.admin_id = users.user_id "
+                        "WHERE questions.question_id = " + std::to_string(problem_id);
+
+        sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(DB.getDBHandle(), query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Error preparing SQL statement" << std::endl;
+        return false;
+    }
+
+    if (sqlite3_step(stmt) != SQLITE_ROW) {
+        std::cerr << "No rows returned" << std::endl;
+        sqlite3_finalize(stmt);
+        return false;
+    }
+
+    std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+    
+    if (username.compare(author) == 0) 
+        return true;
+    
+    return false;
+}
+
 void handle_registration(HTTPRequest& req, int client_socket) {
 
     std::string http_response {};
@@ -514,21 +558,10 @@ void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) 
 }
 
 void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) {
-    int count {};
 
     HTTPResponse response {};
     std::string http_response {};
 
-    Database& DB = Database::getInstance();
-    SessionManager& session = SessionManager::get_instance();
+    bool is_valid = is_author(req, problem_id);
 
-    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
-                            [](const std::pair<std::string, std::string>& pair) {
-                                return pair.first == "session_id";
-                         });
-
-    bool is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
-    
-    if (!is_authenticated)
-        return;
 }

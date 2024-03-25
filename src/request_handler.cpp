@@ -114,7 +114,7 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if (req.URI.find("/update") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
             if (params.find("id") != params.end())
-                handle_update_problem(req, client_socket, std::atoi(params["id"].c_str()));
+                serveStaticFile("./public/update_problem.html", client_socket);
         }
         else if(req.URI == "/logout") {
             handle_logout(req, client_socket);
