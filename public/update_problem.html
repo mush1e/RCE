@@ -108,7 +108,6 @@
                 if(loadXhr.readyState === XMLHttpRequest.DONE) {
                     if(loadXhr.status == 200) {
                         var question = JSON.parse(loadXhr.responseText);
-                        console.log(question);
                         var questionTitle = document.getElementById("questionTitle");
                         var questionText = document.getElementById("markdown-input")
                         questionTitle.value = question.title;
@@ -124,9 +123,6 @@
             authXhr.onreadystatechange = function() {
                 if (authXhr.readyState === XMLHttpRequest.DONE) {
                     if (authXhr.status === 200) {
-                        // User is logged in, show the submit form
-                        var submitFormGroup = document.getElementById("submitFormGroup");
-                        submitFormGroup.style.display = "block";
                         navItemList.innerHTML += '<li class="nav-item">' +
                         `<a class="nav-link" href="/logout">logout</a>`
                         + `</li>`;
