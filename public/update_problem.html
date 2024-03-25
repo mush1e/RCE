@@ -56,6 +56,15 @@
         const toggleButton = document.getElementById('toggle-button');
         const addProblemButton = document.getElementById('addProblemButton');
 
+        function GetURLParameter(sParam) {
+            var sPageURL = window.location.search.substring(1);
+            var sURLVariables = sPageURL.split('&');
+            for (var i = 0; i < sURLVariables.length; i++) {
+                var sParameterName = sURLVariables[i].split('=');
+                if (sParameterName[0] == sParam)
+                    return sParameterName[1];
+            }
+        }
 
         // Create a new Showdown converter
         const converter = new showdown.Converter();
@@ -91,6 +100,24 @@
         toggleButton.addEventListener('click', toggleMode);
 
         document.addEventListener("DOMContentLoaded", function() {
+
+            var loadXhr = new XMLHttpRequest();
+            loadXhr.open("GET", "/get_problem?id=" + GetURLParameter('id'), true);
+            loadXhr.setRequestHeader("Content-Type", "application/json");
+            loadXhr.onreadystatechange = function() {
+                if(loadXhr.readyState === XMLHttpRequest.DONE) {
+                    if(loadXhr.status == 200) {
+                        var question = JSON.parse(loadXhr.responseText);
+                        console.log(question);
+                        var questionTitle = document.getElementById("questionTitle");
+                        var questionText = document.getElementById("markdown-input")
+                        questionTitle.value = question.title;
+                        questionText.value = question.text;
+                        updatePreview();
+                    }
+                }
+            }
+            loadXhr.send();
 
             var authXhr = new XMLHttpRequest();
             authXhr.open("GET", "/is_auth", true);
