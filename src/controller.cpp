@@ -609,6 +609,3 @@ void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) 
     }
     sqlite3_finalize(stmt);
 }
-
-// TODO
-//  Bug - new line char handling in add/update problem
