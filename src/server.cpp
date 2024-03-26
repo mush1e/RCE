@@ -32,7 +32,7 @@ auto HTTP_Server::start() -> void {
         std::cerr << "Error: Failed to listen for connections!\n";
         exit(1);
     }
-
+    
     // Obtain the single instance of the Database class
     Database& database = Database::getInstance();
 
@@ -40,6 +40,10 @@ auto HTTP_Server::start() -> void {
     database.initialize_database();
     database.create_tables();
     database.add_leetcode_problems();
+
+    Filesystem_Manager& filesystem = Filesystem_Manager::get_instance();
+    filesystem.init_filesystems();
+    
     // Success message
     std::cout << "Server started. Listening on port " << this->port << "...\n";
 

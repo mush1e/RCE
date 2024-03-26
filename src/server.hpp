@@ -14,6 +14,7 @@
 #include "database.hpp"
 #include "threadpool.hpp"
 #include "request_handler.hpp"
+#include "filesystem_manager.hpp"
 
 
 class HTTP_Server {
