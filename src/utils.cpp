@@ -56,7 +56,7 @@ std::string escape_string(const std::string& input) {
         if (c == '\'') {
             output += '\'';
         } else if (c == '\n') {
-            output += "\\n";
+            output += "<br>";
         } else {
             output += c;
         }
