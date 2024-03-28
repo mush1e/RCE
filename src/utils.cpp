@@ -11,13 +11,13 @@ std::string get_form_field(const std::string& body, const std::string& field_nam
     if (pos != std::string::npos) {
         pos += field_name.length() + 1;
         size_t end_pos = body.find("&", pos);
-        
-        end_pos = (end_pos == std::string::npos) 
+
+        end_pos = (end_pos == std::string::npos)
                     ?  body.length()
                     :  end_pos;
-        
+
         field_value = body.substr(pos, end_pos - pos);
-        
+
     }
 
     return url_decode(field_value);
@@ -26,14 +26,14 @@ std::string get_form_field(const std::string& body, const std::string& field_nam
 std::string url_decode(const std::string& str) {
     int i = 0;
     std::stringstream decoded;
-    
+
     while (i < str.length()) {
         if (str[i] == '%') {
             if (i + 2 < str.length()) {
                 int hexValue;
                 std::istringstream(str.substr(i + 1, 2)) >> std::hex >> hexValue;
                 decoded << static_cast<char>(hexValue);
-                i += 3; 
+                i += 3;
             } else {
                 // If '%' is at the end of the string, leave it unchanged
                 decoded << '%';
@@ -56,7 +56,7 @@ std::string escape_string(const std::string& input) {
         if (c == '\'') {
             output += '\'';
         } else if (c == '\n') {
-            output += "<br>";
+            output += "<br>\\n";
         } else {
             output += c;
         }
