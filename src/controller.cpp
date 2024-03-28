@@ -439,7 +439,7 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
                 } else {
                     // add directory for the new problem
                     int question_id = sqlite3_last_insert_rowid(DB.getDBHandle());
-                    filesystem.add_problem(std::to_string(question_id));
+                    filesystem.add_problem_dir(std::to_string(question_id));
 
                     response.status_code = 200;
                     response.status_message = "OK";
@@ -516,6 +516,7 @@ void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) 
 
     Database& DB = Database::getInstance();
     SessionManager& session = SessionManager::get_instance();
+    Filesystem_Manager& filesystem = Filesystem_Manager::get_instance();
 
     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                             [](const std::pair<std::string, std::string>& pair) {
@@ -552,6 +553,8 @@ void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) 
                 response.status_message = "Internal Server Error: Failed to delete the question";
                 http_response = response.generate_response();
             } else {
+                filesystem.delete_problem_dir(std::to_string(problem_id));
+
                 sqlite3_finalize(stmt);
                 response.status_code = 302;
                 response.status_message = "Question Deleted";
