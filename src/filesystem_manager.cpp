@@ -27,9 +27,18 @@ void Filesystem_Manager::init_filesystems() {
         std::string directory_name = base_directory + "/" + problem_id;
 
         if (mkdir(directory_name.c_str(), 0777) == -1)
-            std::cerr << "Error :  " << strerror(errno) << problem_id << std::endl; 
+            std::cerr << "Error :  " << strerror(errno) << " - " << problem_id << std::endl; 
         else
-            std::cout << "Directory created" << " " << problem_id << std::endl;
+            std::cout << "Directory created" << " - " << problem_id << std::endl;
     }
     
+}
+
+void Filesystem_Manager::add_problem(const std::string& problem_id) {
+    std::string directory_name = this->base_directory + "/" + problem_id;
+
+    if (mkdir(directory_name.c_str(), 0777) == -1)
+        std::cerr << "Error :  " << strerror(errno) << " - " << problem_id << std::endl; 
+    else
+        std::cout << "Directory created" << " - " << problem_id << std::endl;
 }

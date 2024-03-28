@@ -1,4 +1,5 @@
 #include "controller.hpp"
+#include <string>
 
 bool is_author(HTTPRequest& req, int problem_id) {
     bool is_authenticated {};
@@ -12,7 +13,7 @@ bool is_author(HTTPRequest& req, int problem_id) {
                            });
 
     is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
-    
+
     if(!is_authenticated)
         return false;
 
@@ -37,10 +38,10 @@ bool is_author(HTTPRequest& req, int problem_id) {
     }
 
     std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-    
-    if (username.compare(author) == 0) 
+
+    if (username.compare(author) == 0)
         return true;
-    
+
     return false;
 }
 
@@ -53,7 +54,7 @@ void handle_registration(HTTPRequest& req, int client_socket) {
     std::string password = get_form_field(req.body, "password");
     std::string confirm_password = get_form_field(req.body, "confirm_password");
     std::string admin_checkbox = get_form_field(req.body, "admin");
-    
+
     Database& db = Database::getInstance();
 
     auto send_bad_request = [&](int client_socket) {
@@ -192,7 +193,7 @@ void handle_get_problems(HTTPRequest& req, int client_socket) {
         json_response += problem_json;
         stepResult = sqlite3_step(stmt);
 
-        if (stepResult == SQLITE_ROW) 
+        if (stepResult == SQLITE_ROW)
             json_response += ",";
     }
     sqlite3_finalize(stmt);
@@ -297,7 +298,7 @@ void handle_logout(HTTPRequest& req, int client_socket) {
 
     HTTPResponse response {};
     SessionManager& session_manager = SessionManager::get_instance();
-    
+
     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                            [](const std::pair<std::string, std::string>& pair) {
                                return pair.first == "session_id";
@@ -390,6 +391,7 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
     HTTPResponse response {};
     Database& DB = Database::getInstance();
     SessionManager& session = SessionManager::get_instance();
+    Filesystem_Manager& filesystem = Filesystem_Manager::get_instance();
 
     auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
                            [](const std::pair<std::string, std::string>& pair) {
@@ -435,6 +437,10 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
                     response.body = "Failed to add problem: " + title;
                     http_response = response.generate_response();
                 } else {
+                    // add directory for the new problem
+                    int question_id = sqlite3_last_insert_rowid(DB.getDBHandle());
+                    filesystem.add_problem(std::to_string(question_id));
+
                     response.status_code = 200;
                     response.status_message = "OK";
                     response.body = "Question has been added!";
@@ -449,7 +455,7 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
         response.body = "Invalid Session";
         http_response = response.generate_response();
     }
-    send(client_socket, http_response.c_str(), http_response.length(), 0);  
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
 
 
@@ -517,10 +523,10 @@ void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) 
                          });
 
     bool is_authenticated = it != req.cookies.end() && session.isValidSession(it->second);
-    
+
     if (!is_authenticated)
         return;
-    
+
     std::string query = "SELECT * FROM questions WHERE question_id = " + std::to_string(problem_id);
     sqlite3_stmt* stmt;
 
@@ -554,7 +560,7 @@ void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id) 
             }
         }
     }
-    send(client_socket, http_response.c_str(), http_response.length(), 0);  
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
 
 void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) {
@@ -571,7 +577,7 @@ void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) 
 
     title = escape_string(title);
     text = escape_string(text);
-    
+
     if (!is_valid) {
         response.status_code = 403;
         response.status_message = "Forbidden";
@@ -592,7 +598,7 @@ void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) 
     sqlite3_bind_text(stmt, 1, title.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, text.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_int(stmt, 3, problem_id);
-    
+
     int step_result = sqlite3_step(stmt);
 
     if (step_result == SQLITE_DONE) {

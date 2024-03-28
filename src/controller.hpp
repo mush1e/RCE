@@ -1,6 +1,7 @@
 #include <regex>
 #include "request_handler.hpp"
 #include "session_management.hpp"
+#include "filesystem_manager.hpp"
 #include "database.hpp"
 #include "utils.hpp"
 

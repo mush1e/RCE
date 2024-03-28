@@ -11,14 +11,14 @@
 
 class Filesystem_Manager {
     std::string base_directory {};
-    std::unordered_map<std::string, std::unordered_map<std::string, FILE*>> file_indexer {};
+    // std::unordered_map<std::string, std::unordered_map<std::string, FILE*>> file_indexer {};
     std::mutex mtx {};
 
     Filesystem_Manager(const std::string& base_dir = "./script_storage");
     
     public:
         static Filesystem_Manager& get_instance();
-        void add_submission();
+        void add_problem(const std::string& problem_id);
         void init_filesystems();
 };
 
