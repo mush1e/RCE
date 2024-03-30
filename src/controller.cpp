@@ -1,5 +1,6 @@
 #include "controller.hpp"
 #include <string>
+#include <sys/socket.h>
 
 bool is_author(HTTPRequest& req, int problem_id) {
     bool is_authenticated {};
@@ -617,4 +618,15 @@ void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) 
         send(client_socket, http_response.c_str(),http_response.length() , 0);
     }
     sqlite3_finalize(stmt);
+}
+
+
+void handle_submit_solution(HTTPRequest& req, int client_socket, int problem_id) {
+    HTTPResponse response {};
+    std::string http_response {};
+    response.status_code = 200;
+    response.status_message = "OK";
+    http_response = response.generate_response();
+    std::cout << req.body << std::endl;
+    send(client_socket, http_response.c_str(), http_response.length(), 0);
 }

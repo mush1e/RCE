@@ -30,12 +30,11 @@
             </div>
             <div class="card-body">
                 <p id="problemStatement" class="card-text">Body</p>
-             <div class="form-group" id="submitFormGroup" style="display: none;">
+                <div class="form-group" id="submitFormGroup" style="display: none;">
                     <label for="fileInput">Choose File:</label>
                     <input type="file" class="form-control-file" id="fileInput" name="file" accept=".py">
                     <br/>
-                    <button type="submit" class="btn btn-primary">Submit File</button>
-                    <button type="submit" class="btn btn-primary">Run Submission</button>
+                    <button type="submit" onclick="submitForm()" class="btn btn-outline-success">Submit Solution</button>
                     <br/>
                     <br/>
                     <div id="adminPanel" style="display: none;">
@@ -46,9 +45,9 @@
 
                 </div>
 
-                <a href="/" class="btn btn-outline-danger" id="redirectButton">Back</a>
-            </div>
+            <a href="/" class="btn btn-outline-danger" id="redirectButton">Back</a>
         </div>
+    </div>
     </div>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -64,6 +63,39 @@
                     return sParameterName[1];
             }
         }
+
+        function submitForm() {
+          const fileInput = document.getElementById('fileInput');
+          const file = fileInput.files[0];
+
+          if (file) {
+              const xhr = new XMLHttpRequest();
+              const formData = new FormData();
+              formData.append('file', file);
+
+              xhr.open('POST', '/submit?id=' + GetURLParameter('id'), true);
+
+              xhr.onreadystatechange = function () {
+                  if (xhr.readyState === 4) {
+                      if (xhr.status === 200) {
+                          alert('File uploaded successfully!');
+                      } else {
+                          alert('Failed to upload file!');
+                      }
+                  }
+              };
+
+              xhr.onerror = function (error) {
+                  console.error('Error uploading file:', error);
+              };
+
+              xhr.send(formData);
+          } else {
+              alert('Please select a file to upload.');
+          }
+      }
+
+
         var deleteButton = document.getElementById("deleteButton");
         deleteButton.href = "/delete?id=" + GetURLParameter("id");
 
@@ -131,6 +163,8 @@
             }
             xhr.send();
         });
+
+
     </script>
 </body>
 </html>

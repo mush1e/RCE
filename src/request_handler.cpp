@@ -84,7 +84,7 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
             if (params.find("id") != params.end()) {
                 handle_is_author(req, client_socket, std::atoi(params["id"].c_str()));
             }
-            else 
+            else
                 sendNotFoundResponse(client_socket);
 
         }
@@ -141,9 +141,11 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
             handle_authentication(req, client_socket);
 
         //TODO
-        else if (req.URI == "/submit")
-            handle_authentication(req, client_socket);
-
+        else if (req.URI.find("/submit") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end())
+                handle_submit_solution(req, client_socket, std::atoi(params["id"].c_str()));
+        }
         //TODO
         else if (req.URI == "/run") {}
             // handle_run(req, client_socket);
