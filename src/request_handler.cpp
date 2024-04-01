@@ -79,6 +79,14 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if(req.URI == "/is_auth")
             handle_is_auth(req, client_socket);
 
+            else if (req.URI.find("/submission_exists")) {
+                std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+                if(params.find("id") != params.end())
+                    handle_submission_exists(req, client_socket, std::stoi(params["id"].c_str()));
+                else
+                    sendNotFoundResponse(client_socket);
+            }
+
         else if (req.URI.find("/is_author") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
             if (params.find("id") != params.end()) {

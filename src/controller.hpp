@@ -24,6 +24,7 @@ void handle_add_problem(HTTPRequest& req, int client_socket);
 void handle_delete_problem(HTTPRequest& req, int client_socket, int problem_id);
 void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id);
 void handle_submit_solution(HTTPRequest& req, int client_socket, int problem_id);
+void handle_submission_exists(HTTPRequest& req, int client_socket, int problem_id);
 
 
 // Helper methods

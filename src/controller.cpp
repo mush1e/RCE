@@ -651,3 +651,7 @@ void handle_submit_solution(HTTPRequest& req, int client_socket, int problem_id)
     }
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
+
+void handle_submission_exists(HTTPRequest &req, int client_socket, int problem_id) {
+    // TODO
+}
