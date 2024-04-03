@@ -624,9 +624,30 @@ void handle_update_problem(HTTPRequest& req, int client_socket, int problem_id) 
 void handle_submit_solution(HTTPRequest& req, int client_socket, int problem_id) {
     HTTPResponse response {};
     std::string http_response {};
-    response.status_code = 200;
-    response.status_message = "OK";
-    http_response = response.generate_response();
-    std::cout << req.body << std::endl;
+    SessionManager& session = SessionManager::get_instance();
+    req.body = decode_file_data(req);
+
+    auto it = std::find_if(req.cookies.begin(), req.cookies.end(),
+                            [](const std::pair<std::string, std::string>& pair) {
+                                return pair.first == "session_id";
+                         });
+
+    std::string username = session.getUserId(it->second);
+    std::string file_path = "./script_storage/" + std::to_string(problem_id)
+                           + "/" + username + ".py";
+
+    std::fstream file(file_path, std::ios::out | std::ios::binary);
+
+    if (!file.is_open()) {
+        response.status_code = 500;
+        response.status_message = "Internal Server Error";
+        http_response = response.generate_response();
+    }
+    else {
+        file << req.body;
+        response.status_code = 200;
+        response.status_message = "OK";
+        http_response = response.generate_response();
+    }
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 }
