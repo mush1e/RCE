@@ -79,20 +79,12 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
         else if(req.URI == "/is_auth")
             handle_is_auth(req, client_socket);
 
-            else if (req.URI.find("/submission_exists")) {
-                std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
-                if(params.find("id") != params.end())
-                    handle_submission_exists(req, client_socket, std::stoi(params["id"].c_str()));
-                else
-                    sendNotFoundResponse(client_socket);
-            }
-
         else if (req.URI.find("/is_author") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
             if (params.find("id") != params.end()) {
                 handle_is_author(req, client_socket, std::atoi(params["id"].c_str()));
             }
-            else 
+            else
                 sendNotFoundResponse(client_socket);
 
         }
@@ -149,9 +141,11 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
             handle_authentication(req, client_socket);
 
         //TODO
-        else if (req.URI == "/submit")
-            handle_authentication(req, client_socket);
-
+        else if (req.URI.find("/submit") == 0) {
+            std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
+            if (params.find("id") != params.end())
+                handle_submit_solution(req, client_socket, std::atoi(params["id"].c_str()));
+        }
         //TODO
         else if (req.URI == "/run") {}
             // handle_run(req, client_socket);
@@ -237,15 +231,24 @@ auto parse_request(HTTPRequest& req, const std::string& req_str) -> void {
         }
     }
 
+    // Parse body based on Content-Length header (if present)
     for (const auto& header : req.headers) {
         if (header.first == "Content-Length") {
             int content_length = std::stoi(header.second);
+
             if (content_length > 0) {
                 std::string body_content(content_length, '\0');
-                if (iss.read(&body_content[0], content_length))
-                    req.body = body_content;
+                if (iss.read(&body_content[0], content_length)) {
+
+                    // URL decoding for form data
+                    if (req.headers[0].second == "application/x-www-form-urlencoded")
+                        parse_form_data(body_content, req);
+
+                    else
+                        req.body = body_content;
+                }
             }
-            break;
+            break; // Stop after finding Content-Length header
         }
     }
 }

@@ -4,50 +4,6 @@ auto display_request(HTTPRequest& req) -> void {
     std::cout << req.URI << req.method << std::endl;
 }
 
-
-std::string decode_file_data(HTTPRequest& req) {
-    std::string boundary;
-    for (const auto& header : req.headers) {
-        if (header.first == "Content-Type") {
-            size_t pos = header.second.find("boundary=");
-            if (pos != std::string::npos) {
-                boundary = header.second.substr(pos + 9); // Length of "boundary="
-                break;
-            }
-        }
-    }
-
-    if (boundary.empty()) {
-        std::cerr << "Boundary not found in Content-Type header" << std::endl;
-        return "";
-    }
-
-    std::string decoded_data;
-    size_t pos = 0;
-
-    while ((pos = req.body.find("--" + boundary, pos)) != std::string::npos) {
-        size_t start_pos = pos + boundary.length() + 2;
-        size_t end_pos = req.body.find("\r\n--" + boundary, start_pos);
-        if (end_pos == std::string::npos)
-            end_pos = req.body.length();
-
-        size_t header_end = req.body.find("\r\n\r\n", start_pos);
-        if (header_end != std::string::npos)
-            start_pos = header_end + 4;
-
-        std::string part_content = req.body.substr(start_pos, end_pos - start_pos - 2);
-        decoded_data += part_content;
-        pos = end_pos;
-    }
-    pos = decoded_data.find_last_of('\n');
-
-    if (pos != std::string::npos)
-        decoded_data.erase(pos);
-
-    return decoded_data;
-}
-
-
 std::string get_form_field(const std::string& body, const std::string& field_name) {
     std::string field_value;
     size_t pos = body.find(field_name + "=");
