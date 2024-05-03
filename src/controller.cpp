@@ -664,6 +664,13 @@ void handle_run_submission(HTTPRequest& req, int client_socket, int problem_id) 
                                 return pair.first == "session_id";
                          });
     username = session.getUserId(it->second);
-   
+
     std::string file_path = "./script_storage/" + std::to_string(problem_id) + "/" + username + ".py";
+    // TBD - run the script
+    //     - get result of running script
+    //     - return status code (how many test cases passed, if failed which testcase failed)
 }
+
+// maybe doing AOC type puzzles instead? that could be a kinda cool way to
+// implement submission etc, focus more on difficulty of problem than time limit
+// obviously have like a submission leaderboard type thing
