@@ -386,6 +386,9 @@ void handle_add_problem(HTTPRequest& req, int client_socket) {
     std::string title = get_form_field(req.body, "question_title");
     std::string text = get_form_field(req.body, "question_text");
 
+    std::string inputFile = get_form_field(req.body, "inputFile");
+    std::cout << inputFile << std::endl;
+
     title = escape_string(title);
     text = escape_string(text);
 
