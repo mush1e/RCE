@@ -39,14 +39,15 @@
                 <div id="preview-container" style="display: none;">
                     <div id="markdown-preview" class="border p-3"></div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="questionInput">Problem input file:</label>
+
+                <!-- TODO: submission of input and output files -->
+                <!-- <label for="questionInput">Problem input file:</label>
                 <input type="file" class="form-control-file" id="fileInput-input" name="file" accept=".txt">
                 <br/>
+
                 <label for="questionInput">Problem output file:</label>
                 <input type="file" class="form-control-file" id="fileInput-output" name="file" accept=".txt">
-                <br/>
+                <br/> -->
             </div>
             <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
             <a href="/" class="btn btn-danger" id="redirectButton">Back</a>
@@ -106,8 +107,6 @@
                 if (authXhr.readyState === XMLHttpRequest.DONE) {
                     if (authXhr.status === 200) {
                         // User is logged in, show the submit form
-                        var submitFormGroup = document.getElementById("submitFormGroup");
-                        submitFormGroup.style.display = "block";
                         navItemList.innerHTML += '<li class="nav-item">' +
                         `<a class="nav-link" href="/logout">logout</a>`
                         + `</li>`;
@@ -129,12 +128,12 @@
 
                 var xhr = new XMLHttpRequest();
                 var formData = new FormData(document.getElementById("addProblemForm"));
-                var inputFile = document.getElementById("inputForm-input");
-                var inputFile = document.getElementById("inputForm-output");
+                // var inputFile = document.getElementById("inputForm-input");
+                // var inputFile = document.getElementById("inputForm-output");
 
-                // appending the input and output txt files to the POST request
-                formData.append('inputFile', inputFile);
-                formData.append('outputFile',outputFile);
+                // // appending the input and output txt files to the POST request
+                // formData.append('inputFile', inputFile);
+                // formData.append('outputFile',outputFile);
 
                 xhr.open("POST", "/add_problem", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
