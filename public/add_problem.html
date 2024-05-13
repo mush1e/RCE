@@ -42,10 +42,10 @@
             </div>
             <div class="form-group">
                 <label for="questionInput">Problem input file:</label>
-                <input type="file" class="form-control-file" id="fileInput" name="file" accept=".txt">
+                <input type="file" class="form-control-file" id="fileInput-input" name="file" accept=".txt">
                 <br/>
                 <label for="questionInput">Problem output file:</label>
-                <input type="file" class="form-control-file" id="fileInput" name="file" accept=".txt">
+                <input type="file" class="form-control-file" id="fileInput-output" name="file" accept=".txt">
                 <br/>
             </div>
             <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
@@ -128,9 +128,16 @@
                 event.preventDefault();
 
                 var xhr = new XMLHttpRequest();
+                var formData = new FormData(document.getElementById("addProblemForm"));
+                var inputFile = document.getElementById("inputForm-input");
+                var inputFile = document.getElementById("inputForm-output");
+
+                // appending the input and output txt files to the POST request
+                formData.append('inputFile', inputFile);
+                formData.append('outputFile',outputFile);
+
                 xhr.open("POST", "/add_problem", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                var formData = new FormData(document.getElementById("addProblemForm"));
 
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === XMLHttpRequest.DONE) {

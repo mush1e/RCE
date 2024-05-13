@@ -663,6 +663,7 @@ void handle_run_submission(HTTPRequest& req, int client_socket, int problem_id) 
                             [](const std::pair<std::string, std::string>& pair) {
                                 return pair.first == "session_id";
                          });
+
     username = session.getUserId(it->second);
 
     std::string file_path = "./script_storage/" + std::to_string(problem_id) + "/" + username + ".py";
