@@ -39,14 +39,13 @@
                 <div id="preview-container" style="display: none;">
                     <div id="markdown-preview" class="border p-3"></div>
                 </div>
-
-                <!-- TODO: submission of input and output files -->
+            </div>
+            <div class="form-group">
                 <label for="questionInput">Problem input file:</label>
-                <input type="file" class="form-control-file" id="fileInput-input" name="file" accept=".txt" required>
+                <input type="file" class="form-control-file" id="fileInput-infile" name="file" accept=".txt">
                 <br/>
-
                 <label for="questionInput">Problem output file:</label>
-                <input type="file" class="form-control-file" id="fileInput-output" name="file" accept=".txt" required>
+                <input type="file" class="form-control-file" id="fileInput-outfile" name="file" accept=".txt">
                 <br/>
             </div>
             <button type="submit" class="btn btn-primary" id="addProblemButton">Add problem</button>
@@ -63,8 +62,8 @@
         const editorContainer = document.getElementById('editor-container');
         const previewContainer = document.getElementById('preview-container');
         const toggleButton = document.getElementById('toggle-button');
-        const addProblemForm = document.getElementById('addProblemForm');
-        const navItemList = document.getElementById('navItemList');
+        const addProblemButton = document.getElementById('addProblemButton');
+
 
         // Create a new Showdown converter
         const converter = new showdown.Converter();
@@ -100,11 +99,15 @@
         toggleButton.addEventListener('click', toggleMode);
 
         document.addEventListener("DOMContentLoaded", function() {
+
             var authXhr = new XMLHttpRequest();
             authXhr.open("GET", "/is_auth", true);
             authXhr.onreadystatechange = function() {
                 if (authXhr.readyState === XMLHttpRequest.DONE) {
                     if (authXhr.status === 200) {
+                        // User is logged in, show the submit form
+                        var submitFormGroup = document.getElementById("submitFormGroup");
+                        submitFormGroup.style.display = "block";
                         navItemList.innerHTML += '<li class="nav-item">' +
                         `<a class="nav-link" href="/logout">logout</a>`
                         + `</li>`;
@@ -121,34 +124,39 @@
                 }
             }
             authXhr.send();
-
             addProblemForm.addEventListener('submit', function(event) {
                 event.preventDefault();
 
                 var xhr = new XMLHttpRequest();
-                var formData = new FormData(addProblemForm);
-                var inputFile = document.getElementById("fileInput-input").files[0];
-                var outputFile = document.getElementById("fileInput-output").files[0];
-
-                // appending the input and output txt files to the POST request
-                formData.append('inputFile', inputFile);
-                formData.append('outputFile', outputFile);
-
                 xhr.open("POST", "/add_problem", true);
+                xhr.setRequestHeader("Content-Type", "multipart/form-data");
+                var formData = new FormData(document.getElementById("addProblemForm"));
+                console.log(formData);
                 xhr.onreadystatechange = function() {
                     if(xhr.readyState === XMLHttpRequest.DONE) {
                         if(xhr.status == 200)
-                            window.location.href = "/"
+                            // window.location.href = "/"
+
                         else if(xhr.status == 400)
                             alert("Problem with title already exists! Please try again")
+
                     }
                 }
 
-                xhr.send(formData);
+                var urlEncodedData = "";
+                for (var pair of formData.entries()) {
+                    if (urlEncodedData !== "") {
+                        urlEncodedData += "&";
+                    }
+                    urlEncodedData += encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]);
+                }
+
+                xhr.send(urlEncodedData);
             });
         });
 
     </script>
+
 
 </body>
 </html>
