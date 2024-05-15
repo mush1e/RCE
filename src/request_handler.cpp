@@ -3,6 +3,27 @@
 #include "utils.hpp"
 #include <unordered_map>
 
+std::ostream& operator<<(std::ostream& os, const HTTPRequest& req) {
+    os << "Method: " << req.method << "\n";
+    os << "URI: " << req.URI << "\n";
+    os << "Version: " << req.version << "\n";
+    os << "Headers:\n";
+    for (const auto& header : req.headers) {
+        os << "  " << std::setw(20) << std::left << header.first << ": " << header.second << "\n";
+    }
+    os << "Cookies:\n";
+    for (const auto& cookie : req.cookies) {
+        os << "  " << std::setw(20) << std::left << cookie.first << ": " << cookie.second << "\n";
+    }
+    os << "Body: " << req.body << "\n";
+    return os;
+}
+
+// Define the print_pretty_request function
+void print_pretty_request(const HTTPRequest& req) {
+    std::cout << req;
+}
+
 void HTTPResponse::set_JSON_content(const std::string& json_data) {
     this->content_type = "application/json";
     this->body = json_data;
@@ -131,9 +152,9 @@ auto handle_request(HTTPRequest& req, int client_socket) -> void {
 
         else if (req.URI.find("/run_submission") == 0) {
             std::unordered_map<std::string, std::string> params = parse_parameters(req.URI);
-            if(params.find("id") != params.end()) 
+            if(params.find("id") != params.end())
                 handle_run_submission(req, client_socket, std::stoi(params["id"].c_str()));
-            else 
+            else
                 sendNotFoundResponse(client_socket);
         }
 

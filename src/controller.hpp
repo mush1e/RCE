@@ -1,4 +1,6 @@
 #include <regex>
+#include <unistd.h>
+#include <fstream>
 #include "request_handler.hpp"
 #include "session_management.hpp"
 #include "filesystem_manager.hpp"

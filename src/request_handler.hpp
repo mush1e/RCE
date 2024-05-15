@@ -1,16 +1,18 @@
-#include <sys/socket.h>
-#include <iostream>
-#include <unistd.h>
-#include <string>
-#include <sstream>
-#include <sstream>
-#include <fstream>
-#include <unordered_map>
-
 #ifndef REQUEST_HANDLER_HPP
 #define REQUEST_HANDLER_HPP
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
+#include <utility>
+#include <sys/socket.h>
+#include <unordered_map>
 
-#include "database.hpp"
+// Forward declaration of functions and structures
+struct HTTPRequest;
+struct HTTPResponse;
+
+std::ostream& operator<<(std::ostream& os, const HTTPRequest& req);
 
 struct HTTPRequest {
     std::string method   {};
@@ -40,5 +42,7 @@ void parse_form_data(const std::string& form_data, HTTPRequest& req);
 void serveStaticFile(const std::string& filePath, int client_socket);
 void sendNotFoundResponse(int client_socket);
 std::unordered_map<std::string, std::string> parse_parameters(std::string uri);
+
+void print_pretty_request(const HTTPRequest& req);
 
 #endif // REQUEST_HANDLER_HPP
