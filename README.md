@@ -1,6 +1,6 @@
-# CodeRunHub
+# RCE (Name TBD)
 
-**CodeRunHub** is a secure remote code execution platform that allows users to submit, execute, and view results of code written in various programming languages. It features real-time execution output, sandboxing, and multi-user support.
+**RCE** is a secure remote code execution platform that allows users to submit, execute, and view results of code written in various programming languages. It features real-time execution output, sandboxing, and multi-user support.
 
 ## Features
 
